@@ -17,9 +17,7 @@ services:
         value: production
 
       - key: DATABASE_URL
-        value: >-
-          postgresql://budka_gofrowa_user:1oPLf5e5jkHfTmA6WXc0REAWim4Bt4fa
-          @dpg-d1du7jur433s73fqpq90-a.oregon-internal-postgres.render.com:5432/budka_gofrowa
+        value: postgresql://budka_gofrowa_user:1oPLf5e5jkHfTmA6WXc0REAWim4Bt4fa@dpg-d1du7jur433s73fqpq90-a.oregon-internal-postgres.render.com:5432/budka_gofrowa
 
       - key: SECRET_KEY
         generateValue: true
