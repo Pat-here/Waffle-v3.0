@@ -7,9 +7,9 @@
     <div class="col-12">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h1 class="h3 mb-0">
-                <i class="fas fa-layer-group text-warning"></i> Kompozycje
+                <i class="fas fa-layer-group text-primary"></i> Kompozycje
             </h1>
-            <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#kompozycjaModal">
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#kompozycjaModal">
                 <i class="fas fa-plus"></i> Dodaj Kompozycję
             </button>
         </div>
@@ -21,74 +21,328 @@
         <div class="card">
             <div class="card-body">
                 {% if kompozycje %}
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Nazwa</th>
-                                    <th>Opis</th>
-                                    <th>Cena sprzedaży</th>
-                                    <th>Koszt całkowity</th>
-                                    <th>Marża</th>
-                                    <th>Akcje</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for kompozycja in kompozycje %}
-                                <tr>
-                                    <td><strong>{{ kompozycja.nazwa }}</strong></td>
-                                    <td>{{ kompozycja.opis or '-' }}</td>
-                                    <td class="text-success">{{ "%.2f"|format(kompozycja.cena_sprzedazy) }} zł</td>
-                                    <td class="text-danger">{{ "%.2f"|format(kompozycja.koszt_calkowity) }} zł</td>
-                                    <td>
-                                        <span class="badge {% if kompozycja.marza > 50 %}bg-success{% elif kompozycja.marza > 30 %}bg-warning{% else %}bg-danger{% endif %}">
-                                            {{ "%.1f"|format(kompozycja.marza) }}%
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Nazwa</th>
+                                <th>Składniki</th>
+                                <th>Cena sprzedaży</th>
+                                <th>Koszt wykonania</th>
+                                <th>Marża</th>
+                                <th>Akcje</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for kompozycja in kompozycje %}
+                            <tr>
+                                <td>
+                                    <strong>{{ kompozycja.nazwa }}</strong>
+                                    {% if kompozycja.opis %}
+                                    <br><small class="text-muted">{{ kompozycja.opis }}</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <small>
+                                        {% for item in kompozycja.items %}
+                                        <span class="badge bg-light text-dark me-1">
+                                            {% if item.typ_produktu == 'produkt' %}
+                                                {{ item.produkt.nazwa }}
+                                            {% elif item.typ_produktu == 'dodatek' %}
+                                                {{ item.dodatek.nazwa }}
+                                            {% elif item.typ_produktu == 'napoj' %}
+                                                {{ item.napoj.nazwa }}
+                                            {% endif %}
+                                            ({{ item.ilosc }})
                                         </span>
-                                    </td>
-                                    <td>
-                                        <button type="button" class="btn btn-sm btn-info" 
-                                                onclick="pokazSkladniki({{ kompozycja.id }})">
-                                            <i class="fas fa-eye"></i>
-                                        </button>
-                                        <button type="button" class="btn btn-sm btn-warning">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <button type="button" class="btn btn-sm btn-danger">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
+                                        {% endfor %}
+                                    </small>
+                                </td>
+                                <td class="text-success">
+                                    {% if kompozycja.cena_sprzedazy %}
+                                        {{ "%.2f"|format(kompozycja.cena_sprzedazy) }} zł
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-danger">{{ "%.2f"|format(kompozycja.koszt_wykonania or 0) }} zł</td>
+                                <td>
+                                    {% if kompozycja.marza %}
+                                    <span class="badge {% if kompozycja.marza > 50 %}bg-success{% elif kompozycja.marza > 30 %}bg-warning{% else %}bg-danger{% endif %}">
+                                        {{ "%.1f"|format(kompozycja.marza) }}%
+                                    </span>
+                                    {% else %}
+                                    <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-sm btn-warning" 
+                                            onclick="edytujKompozyzcje({{ kompozycja.id }}, '{{ kompozycja.nazwa }}', '{{ kompozycja.opis or '' }}', {{ kompozycja.cena_sprzedazy or 0 }})">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-danger" 
+                                            onclick="usunKompozyzcje({{ kompozycja.id }})">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
                 {% else %}
-                    <div class="text-center text-muted py-5">
-                        <i class="fas fa-layer-group fa-3x mb-3"></i>
-                        <h5>Brak kompozycji</h5>
-                        <p>Stwórz pierwszą kompozycję łącząc produkty i dodatki.</p>
-                    </div>
+                <div class="text-center text-muted py-5">
+                    <i class="fas fa-layer-group fa-3x mb-3"></i>
+                    <h5>Brak kompozycji</h5>
+                    <p>Dodaj pierwszą kompozycję, aby tworzyć zestawy produktów.</p>
+                </div>
                 {% endif %}
             </div>
         </div>
     </div>
 </div>
 
-<!-- Modal dodawania kompozycji -->
+<!-- Modal dodawania/edycji kompozycji -->
 <div class="modal fade" id="kompozycjaModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Dodaj Kompozycję</h5>
+                <h5 class="modal-title" id="kompozycjaModalTitle">Dodaj Kompozycję</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body">
-                <p class="text-muted">Funkcjonalność kompozycji będzie dostępna w przyszłej wersji.</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Zamknij</button>
-            </div>
+            <form id="kompozycjaForm" action="{{ url_for('dodaj_kompozycje') }}" method="POST">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="mb-3">
+                                <label for="nazwa" class="form-label">Nazwa kompozycji</label>
+                                <input type="text" class="form-control" id="nazwa" name="nazwa" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="cena_sprzedazy" class="form-label">Cena sprzedaży</label>
+                                <div class="input-group">
+                                    <input type="number" step="0.01" class="form-control" id="cena_sprzedazy" name="cena_sprzedazy">
+                                    <span class="input-group-text">zł</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="opis" class="form-label">Opis (opcjonalny)</label>
+                        <textarea class="form-control" id="opis" name="opis" rows="2"></textarea>
+                    </div>
+
+                    <h6>Składniki kompozycji</h6>
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <select class="form-select" id="typSkladnika">
+                                <option value="">Wybierz typ</option>
+                                <option value="produkt">Produkt</option>
+                                <option value="dodatek">Dodatek</option>
+                                <option value="napoj">Napój</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <select class="form-select" id="wybranyProdukt" disabled>
+                                <option value="">Wybierz produkt</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <input type="number" class="form-control" id="iloscSkladnika" placeholder="Ilość" step="0.1" min="0.1" value="1">
+                        </div>
+                        <div class="col-md-2">
+                            <button type="button" class="btn btn-success w-100" onclick="dodajSkladnik()">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="listaSkladnikow" class="mb-3">
+                        <div class="alert alert-info">
+                            <small>Dodaj składniki do kompozycji używając kontrolek powyżej.</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Anuluj</button>
+                    <button type="submit" class="btn btn-primary">Zapisz</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let edytujKompozyzcjeId = null;
+let skladnikiKompozyzcji = [];
+
+const produktyData = {{ produkty|tojson|safe }};
+const dodatkiData = {{ dodatki|tojson|safe }};
+const napojeData = {{ napoje|tojson|safe }};
+
+// Zmiana typu składnika
+document.getElementById('typSkladnika').addEventListener('change', function() {
+    const typ = this.value;
+    const selectProdukt = document.getElementById('wybranyProdukt');
+    
+    selectProdukt.innerHTML = '<option value="">Wybierz produkt</option>';
+    selectProdukt.disabled = !typ;
+    
+    if (typ === 'produkt') {
+        produktyData.forEach(produkt => {
+            selectProdukt.innerHTML += `<option value="${produkt.id}">${produkt.nazwa} (${produkt.cena_sprzedazy} zł)</option>`;
+        });
+    } else if (typ === 'dodatek') {
+        dodatkiData.forEach(dodatek => {
+            selectProdukt.innerHTML += `<option value="${dodatek.id}">${dodatek.nazwa} (${dodatek.koszt_produkcji} zł)</option>`;
+        });
+    } else if (typ === 'napoj') {
+        napojeData.forEach(napoj => {
+            selectProdukt.innerHTML += `<option value="${napoj.id}">${napoj.nazwa} (${napoj.cena_sprzedazy} zł)</option>`;
+        });
+    }
+});
+
+function dodajSkladnik() {
+    const typ = document.getElementById('typSkladnika').value;
+    const produktId = document.getElementById('wybranyProdukt').value;
+    const ilosc = document.getElementById('iloscSkladnika').value;
+    
+    if (!typ || !produktId || !ilosc) {
+        alert('Wypełnij wszystkie pola składnika');
+        return;
+    }
+    
+    let produktNazwa = '';
+    if (typ === 'produkt') {
+        produktNazwa = produktyData.find(p => p.id == produktId).nazwa;
+    } else if (typ === 'dodatek') {
+        produktNazwa = dodatkiData.find(d => d.id == produktId).nazwa;
+    } else if (typ === 'napoj') {
+        produktNazwa = napojeData.find(n => n.id == produktId).nazwa;
+    }
+    
+    skladnikiKompozyzcji.push({
+        typ: typ,
+        id: produktId,
+        nazwa: produktNazwa,
+        ilosc: parseFloat(ilosc)
+    });
+    
+    aktualizujListeSkladnikow();
+    
+    // Reset pól
+    document.getElementById('typSkladnika').value = '';
+    document.getElementById('wybranyProdukt').innerHTML = '<option value="">Wybierz produkt</option>';
+    document.getElementById('wybranyProdukt').disabled = true;
+    document.getElementById('iloscSkladnika').value = '1';
+}
+
+function aktualizujListeSkladnikow() {
+    const lista = document.getElementById('listaSkladnikow');
+    
+    if (skladnikiKompozyzcji.length === 0) {
+        lista.innerHTML = '<div class="alert alert-info"><small>Dodaj składniki do kompozycji używając kontrolek powyżej.</small></div>';
+        return;
+    }
+    
+    let html = '<h6>Składniki:</h6>';
+    skladnikiKompozyzcji.forEach((skladnik, index) => {
+        html += `
+            <div class="d-flex justify-content-between align-items-center mb-2 p-2 bg-light rounded">
+                <span><strong>${skladnik.nazwa}</strong> (${skladnik.typ}) - ${skladnik.ilosc}</span>
+                <button type="button" class="btn btn-sm btn-danger" onclick="usunSkladnik(${index})">
+                    <i class="fas fa-times"></i>
+                </button>
+                <input type="hidden" name="skladniki" value="${skladnik.typ}|${skladnik.id}|${skladnik.ilosc}">
+            </div>
+        `;
+    });
+    
+    lista.innerHTML = html;
+}
+
+function usunSkladnik(index) {
+    skladnikiKompozyzcji.splice(index, 1);
+    aktualizujListeSkladnikow();
+}
+
+function edytujKompozyzcje(id, nazwa, opis, cena_sprzedazy) {
+    edytujKompozyzcjeId = id;
+    document.getElementById('kompozycjaModalTitle').textContent = 'Edytuj Kompozycję';
+    document.getElementById('kompozycjaForm').action = `/kompozycje/edytuj/${id}`;
+    document.getElementById('nazwa').value = nazwa;
+    document.getElementById('opis').value = opis;
+    document.getElementById('cena_sprzedazy').value = cena_sprzedazy;
+    
+    skladnikiKompozyzcji = [];
+    
+    new bootstrap.Modal(document.getElementById('kompozycjaModal')).show();
+}
+
+function usunKompozyzcje(id) {
+    if (confirm('Czy na pewno chcesz usunąć tę kompozycję?')) {
+        fetch(`/kompozycje/usun/${id}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Wystąpił błąd: ' + data.message);
+            }
+        })
+        .catch(error => {
+            alert('Wystąpił błąd: ' + error);
+        });
+    }
+}
+
+// Reset formularza po zamknięciu modala
+document.getElementById('kompozycjaModal').addEventListener('hidden.bs.modal', function () {
+    edytujKompozyzcjeId = null;
+    document.getElementById('kompozycjaModalTitle').textContent = 'Dodaj Kompozycję';
+    document.getElementById('kompozycjaForm').action = '{{ url_for("dodaj_kompozycje") }}';
+    document.getElementById('kompozycjaForm').reset();
+    skladnikiKompozyzcji = [];
+    aktualizujListeSkladnikow();
+});
+
+// Obsługa formularza
+document.getElementById('kompozycjaForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    if (skladnikiKompozyzcji.length === 0) {
+        alert('Dodaj przynajmniej jeden składnik do kompozycji');
+        return;
+    }
+
+    const formData = new FormData(this);
+
+    fetch(this.action, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Wystąpił błąd: ' + data.message);
+        }
+    })
+    .catch(error => {
+        alert('Wystąpił błąd: ' + error);
+    });
+});
+</script>
 {% endblock %}
