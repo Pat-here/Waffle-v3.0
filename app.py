@@ -10,14 +10,15 @@ import secrets
 
 app = Flask(__name__)
 
-# ——— Konfiguracja Render (PostgreSQL) ———
+# ——— Konfiguracja połączenia PostgreSQL ———
 database_url = os.environ.get('DATABASE_URL')
 if database_url and database_url.startswith('postgres://'):
+    # SQLAlchemy wymaga 'postgresql://'
     database_url = database_url.replace('postgres://', 'postgresql://', 1)
 
-app.config['SQLALCHEMY_DATABASE_URI']      = database_url or 'sqlite:///waffle.db'
+app.config['SQLALCHEMY_DATABASE_URI']      = database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SECRET_KEY']                   = os.environ.get('SECRET_KEY', 'dev-key-change-in-production')
+app.config['SECRET_KEY']                    = os.environ.get('SECRET_KEY')
 # ——————————————————————————————————————
 
 db = SQLAlchemy(app)
