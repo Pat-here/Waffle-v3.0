@@ -1,5 +1,3 @@
-# render.yaml
-
 services:
   - type: web
     name: waffle-shop
@@ -18,16 +16,17 @@ services:
       - key: FLASK_ENV
         value: production
 
-      # ———————————————————————————————
-      # 1) Internal connection (private VPC)
-      # ———————————————————————————————
+      # —————————————————————————————————————
+      # Ręczne ustawienie DATABASE_URL:
+      # pełny connection string z Dashboard → Databases → Connection
+      # —————————————————————————————————————
       - key: DATABASE_URL
-        fromDatabase:
-          name: budka_gofrowa
-          property: connectionString
+        value: >-
+          postgres://budka_gofrowa_user:<PASSWORD>
+          @dpg-d1du7jur433s73fqpq90-a.oregon-internal-postgres.render.com:5432/budka_gofrowa
 
-databases:
-  - name: budka_gofrowa
-    databaseName: budka_gofrowa
-    plan: starter
-    region: oregon
+      - key: SECRET_KEY
+        generateValue: true
+
+      - key: FLASK_APP
+        value: app.py
