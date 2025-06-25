@@ -1,0 +1,213 @@
+{% extends "base.html" %}
+
+{% block title %}Dodatki - Budka Gofrowa{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3 mb-0">
+                <i class="fas fa-plus-circle text-success"></i> Dodatki
+            </h1>
+            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#dodatekModal">
+                <i class="fas fa-plus"></i> Dodaj Dodatek
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                {% if dodatki %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Nazwa</th>
+                                    <th>Kategoria</th>
+                                    <th>Cena sprzedaży</th>
+                                    <th>Koszt produkcji</th>
+                                    <th>Marża</th>
+                                    <th>Status</th>
+                                    <th>Akcje</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for dodatek in dodatki %}
+                                <tr>
+                                    <td><strong>{{ dodatek.nazwa }}</strong></td>
+                                    <td>
+                                        <span class="badge {% if dodatek.kategoria == 'słodki' %}bg-warning{% elif dodatek.kategoria == 'wytrawny' %}bg-info{% else %}bg-secondary{% endif %}">
+                                            {{ dodatek.kategoria|title }}
+                                        </span>
+                                    </td>
+                                    <td class="text-success">{{ "%.2f"|format(dodatek.cena_sprzedazy) }} zł</td>
+                                    <td class="text-danger">{{ "%.2f"|format(dodatek.koszt_produkcji) }} zł</td>
+                                    <td>
+                                        <span class="badge {% if dodatek.marza > 50 %}bg-success{% elif dodatek.marza > 30 %}bg-warning{% else %}bg-danger{% endif %}">
+                                            {{ "%.1f"|format(dodatek.marza) }}%
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if dodatek.dostepny %}
+                                            <span class="badge bg-success">Dostępny</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Niedostępny</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm btn-warning" 
+                                                onclick="edytujDodatek({{ dodatek.id }}, '{{ dodatek.nazwa }}', {{ dodatek.cena_sprzedazy }}, {{ dodatek.koszt_produkcji }}, '{{ dodatek.kategoria }}')">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-danger" 
+                                                onclick="usunDodatek({{ dodatek.id }})">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center text-muted py-5">
+                        <i class="fas fa-plus-circle fa-3x mb-3"></i>
+                        <h5>Brak dodatków</h5>
+                        <p>Dodaj pierwszy dodatek, aby poszerzyć ofertę.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal dodawania/edycji dodatku -->
+<div class="modal fade" id="dodatekModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="dodatekModalTitle">Dodaj Dodatek</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="dodatekForm" action="{{ url_for('dodaj_dodatek') }}" method="POST">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="nazwa" class="form-label">Nazwa dodatku</label>
+                        <input type="text" class="form-control" id="nazwa" name="nazwa" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="kategoria" class="form-label">Kategoria</label>
+                        <select class="form-select" id="kategoria" name="kategoria" required>
+                            <option value="">Wybierz kategorię</option>
+                            <option value="słodki">Słodki</option>
+                            <option value="wytrawny">Wytrawny</option>
+                            <option value="standard">Standard</option>
+                            <option value="premium">Premium</option>
+                        </select>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="cena_sprzedazy" class="form-label">Cena sprzedaży</label>
+                                <div class="input-group">
+                                    <input type="number" step="0.01" class="form-control" id="cena_sprzedazy" name="cena_sprzedazy" required>
+                                    <span class="input-group-text">zł</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="koszt_produkcji" class="form-label">Koszt produkcji</label>
+                                <div class="input-group">
+                                    <input type="number" step="0.01" class="form-control" id="koszt_produkcji" name="koszt_produkcji" required>
+                                    <span class="input-group-text">zł</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Anuluj</button>
+                    <button type="submit" class="btn btn-success">Zapisz</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let edytujDodatekId = null;
+
+function edytujDodatek(id, nazwa, cena_sprzedazy, koszt_produkcji, kategoria) {
+    edytujDodatekId = id;
+    document.getElementById('dodatekModalTitle').textContent = 'Edytuj Dodatek';
+    document.getElementById('dodatekForm').action = `/dodatki/edytuj/${id}`;
+    document.getElementById('nazwa').value = nazwa;
+    document.getElementById('cena_sprzedazy').value = cena_sprzedazy;
+    document.getElementById('koszt_produkcji').value = koszt_produkcji;
+    document.getElementById('kategoria').value = kategoria;
+
+    new bootstrap.Modal(document.getElementById('dodatekModal')).show();
+}
+
+function usunDodatek(id) {
+    if (confirm('Czy na pewno chcesz usunąć ten dodatek?')) {
+        fetch(`/dodatki/usun/${id}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Wystąpił błąd: ' + data.message);
+            }
+        })
+        .catch(error => {
+            alert('Wystąpił błąd: ' + error);
+        });
+    }
+}
+
+// Reset formularza po zamknięciu modala
+document.getElementById('dodatekModal').addEventListener('hidden.bs.modal', function () {
+    edytujDodatekId = null;
+    document.getElementById('dodatekModalTitle').textContent = 'Dodaj Dodatek';
+    document.getElementById('dodatekForm').action = '{{ url_for("dodaj_dodatek") }}';
+    document.getElementById('dodatekForm').reset();
+});
+
+// Obsługa formularza
+document.getElementById('dodatekForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const formData = new FormData(this);
+
+    fetch(this.action, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Wystąpił błąd: ' + data.message);
+        }
+    })
+    .catch(error => {
+        alert('Wystąpił błąd: ' + error);
+    });
+});
+</script>
+{% endblock %}

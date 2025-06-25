@@ -1,0 +1,214 @@
+{% extends "base.html" %}
+
+{% block title %}Produkty - Budka Gofrowa{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3 mb-0">
+                <i class="fas fa-cookie-bite text-primary"></i> Produkty
+            </h1>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#produktModal">
+                <i class="fas fa-plus"></i> Dodaj Produkt
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                {% if produkty %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Nazwa</th>
+                                    <th>Kategoria</th>
+                                    <th>Cena sprzedaży</th>
+                                    <th>Koszt wykonania</th>
+                                    <th>Marża</th>
+                                    <th>Status</th>
+                                    <th>Akcje</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for produkt in produkty %}
+                                <tr>
+                                    <td><strong>{{ produkt.nazwa }}</strong></td>
+                                    <td>
+                                        {% if produkt.kategoria %}
+                                            <span class="badge bg-secondary">{{ produkt.kategoria.nazwa }}</span>
+                                        {% else %}
+                                            <span class="text-muted">Brak kategorii</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-success">{{ "%.2f"|format(produkt.cena_sprzedazy) }} zł</td>
+                                    <td class="text-danger">{{ "%.2f"|format(produkt.koszt_wykonania) }} zł</td>
+                                    <td>
+                                        <span class="badge {% if produkt.marza > 50 %}bg-success{% elif produkt.marza > 30 %}bg-warning{% else %}bg-danger{% endif %}">
+                                            {{ "%.1f"|format(produkt.marza) }}%
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if produkt.dostepny %}
+                                            <span class="badge bg-success">Dostępny</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Niedostępny</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm btn-warning" 
+                                                onclick="edytujProdukt({{ produkt.id }}, '{{ produkt.nazwa }}', {{ produkt.cena_sprzedazy }}, {{ produkt.koszt_wykonania }}, {{ produkt.kategoria_id or 'null' }})">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-danger" 
+                                                onclick="usunProdukt({{ produkt.id }})">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center text-muted py-5">
+                        <i class="fas fa-cookie-bite fa-3x mb-3"></i>
+                        <h5>Brak produktów</h5>
+                        <p>Dodaj pierwszy produkt, aby rozpocząć zarządzanie menu.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal dodawania/edycji produktu -->
+<div class="modal fade" id="produktModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="produktModalTitle">Dodaj Produkt</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="produktForm" action="{{ url_for('dodaj_produkt') }}" method="POST">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="nazwa" class="form-label">Nazwa produktu</label>
+                        <input type="text" class="form-control" id="nazwa" name="nazwa" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="kategoria_id" class="form-label">Kategoria</label>
+                        <select class="form-select" id="kategoria_id" name="kategoria_id">
+                            <option value="">Wybierz kategorię (opcjonalne)</option>
+                            {% for kategoria in kategorie %}
+                                <option value="{{ kategoria.id }}">{{ kategoria.nazwa }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="cena_sprzedazy" class="form-label">Cena sprzedaży</label>
+                                <div class="input-group">
+                                    <input type="number" step="0.01" class="form-control" id="cena_sprzedazy" name="cena_sprzedazy" required>
+                                    <span class="input-group-text">zł</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="koszt_wykonania" class="form-label">Koszt wykonania</label>
+                                <div class="input-group">
+                                    <input type="number" step="0.01" class="form-control" id="koszt_wykonania" name="koszt_wykonania" required>
+                                    <span class="input-group-text">zł</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Anuluj</button>
+                    <button type="submit" class="btn btn-primary">Zapisz</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let edytujProduktId = null;
+
+function edytujProdukt(id, nazwa, cena_sprzedazy, koszt_wykonania, kategoria_id) {
+    edytujProduktId = id;
+    document.getElementById('produktModalTitle').textContent = 'Edytuj Produkt';
+    document.getElementById('produktForm').action = `/produkty/edytuj/${id}`;
+    document.getElementById('nazwa').value = nazwa;
+    document.getElementById('cena_sprzedazy').value = cena_sprzedazy;
+    document.getElementById('koszt_wykonania').value = koszt_wykonania;
+    document.getElementById('kategoria_id').value = kategoria_id || '';
+
+    new bootstrap.Modal(document.getElementById('produktModal')).show();
+}
+
+function usunProdukt(id) {
+    if (confirm('Czy na pewno chcesz usunąć ten produkt?')) {
+        fetch(`/produkty/usun/${id}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Wystąpił błąd: ' + data.message);
+            }
+        })
+        .catch(error => {
+            alert('Wystąpił błąd: ' + error);
+        });
+    }
+}
+
+// Reset formularza po zamknięciu modala
+document.getElementById('produktModal').addEventListener('hidden.bs.modal', function () {
+    edytujProduktId = null;
+    document.getElementById('produktModalTitle').textContent = 'Dodaj Produkt';
+    document.getElementById('produktForm').action = '{{ url_for("dodaj_produkt") }}';
+    document.getElementById('produktForm').reset();
+});
+
+// Obsługa formularza
+document.getElementById('produktForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const formData = new FormData(this);
+
+    fetch(this.action, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Wystąpił błąd: ' + data.message);
+        }
+    })
+    .catch(error => {
+        alert('Wystąpił błąd: ' + error);
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block title %}Notatki - Budka Gofrowa{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3 mb-0">
+                <i class="fas fa-sticky-note text-warning"></i> Notatki
+            </h1>
+            <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#notatkaModal">
+                <i class="fas fa-plus"></i> Dodaj Notatkę
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    {% if notatki %}
+        {% for notatka in notatki %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">{{ notatka.tytul }}</h6>
+                    <span class="badge {% if notatka.priorytet == 'wysoki' %}bg-danger{% elif notatka.priorytet == 'średni' %}bg-warning{% else %}bg-success{% endif %}">
+                        {{ notatka.priorytet|title }}
+                    </span>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">{{ notatka.tresc }}</p>
+                </div>
+                <div class="card-footer text-muted">
+                    <small>{{ notatka.created_at.strftime('%d.%m.%Y %H:%M') }}</small>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="col-12">
+            <div class="text-center text-muted py-5">
+                <i class="fas fa-sticky-note fa-3x mb-3"></i>
+                <h5>Brak notatek</h5>
+                <p>Dodaj pierwszą notatkę, aby zacząć organizować pracę.</p>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Modal dodawania notatki -->
+<div class="modal fade" id="notatkaModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Dodaj Notatkę</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="notatkaForm" action="{{ url_for('dodaj_notatke') }}" method="POST">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="tytul" class="form-label">Tytuł</label>
+                        <input type="text" class="form-control" id="tytul" name="tytul" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="priorytet" class="form-label">Priorytet</label>
+                        <select class="form-select" id="priorytet" name="priorytet" required>
+                            <option value="niski">Niski</option>
+                            <option value="średni" selected>Średni</option>
+                            <option value="wysoki">Wysoki</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="tresc" class="form-label">Treść</label>
+                        <textarea class="form-control" id="tresc" name="tresc" rows="4" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Anuluj</button>
+                    <button type="submit" class="btn btn-warning">Zapisz</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('notatkaForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const formData = new FormData(this);
+
+    fetch(this.action, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Wystąpił błąd: ' + data.message);
+        }
+    })
+    .catch(error => {
+        alert('Wystąpił błąd: ' + error);
+    });
+});
+</script>
+{% endblock %}

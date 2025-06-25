@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: budka-gofrowa-dashboard
+    runtime: python3
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    env:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        value: sqlite:///budka_gofrowa.db
+    autoDeploy: false

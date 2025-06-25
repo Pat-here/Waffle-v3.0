@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+
+{% block title %}Pracownicy - Budka Gofrowa{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3 mb-0">
+                <i class="fas fa-users text-primary"></i> Pracownicy
+            </h1>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#pracownikModal">
+                <i class="fas fa-plus"></i> Dodaj Pracownika
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                {% if pracownicy %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Imię i nazwisko</th>
+                                    <th>Stanowisko</th>
+                                    <th>Telefon</th>
+                                    <th>Email</th>
+                                    <th>Stawka/godz</th>
+                                    <th>Akcje</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for pracownik in pracownicy %}
+                                <tr>
+                                    <td><strong>{{ pracownik.imie }} {{ pracownik.nazwisko }}</strong></td>
+                                    <td>{{ pracownik.stanowisko or '-' }}</td>
+                                    <td>{{ pracownik.telefon or '-' }}</td>
+                                    <td>{{ pracownik.email or '-' }}</td>
+                                    <td>{{ "%.2f"|format(pracownik.stawka_godzinowa) }} zł</td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm btn-warning">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-danger">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center text-muted py-5">
+                        <i class="fas fa-users fa-3x mb-3"></i>
+                        <h5>Brak pracowników</h5>
+                        <p>Dodaj pierwszego pracownika do zespołu.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal dodawania pracownika -->
+<div class="modal fade" id="pracownikModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Dodaj Pracownika</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="pracownikForm" action="{{ url_for('dodaj_pracownika') }}" method="POST">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="imie" class="form-label">Imię</label>
+                                <input type="text" class="form-control" id="imie" name="imie" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="nazwisko" class="form-label">Nazwisko</label>
+                                <input type="text" class="form-control" id="nazwisko" name="nazwisko" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="stanowisko" class="form-label">Stanowisko</label>
+                        <input type="text" class="form-control" id="stanowisko" name="stanowisko">
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="telefon" class="form-label">Telefon</label>
+                                <input type="tel" class="form-control" id="telefon" name="telefon">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="email" name="email">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="stawka_godzinowa" class="form-label">Stawka godzinowa</label>
+                        <div class="input-group">
+                            <input type="number" step="0.01" class="form-control" id="stawka_godzinowa" name="stawka_godzinowa">
+                            <span class="input-group-text">zł</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Anuluj</button>
+                    <button type="submit" class="btn btn-primary">Zapisz</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('pracownikForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const formData = new FormData(this);
+
+    fetch(this.action, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Wystąpił błąd: ' + data.message);
+        }
+    })
+    .catch(error => {
+        alert('Wystąpił błąd: ' + error);
+    });
+});
+</script>
+{% endblock %}

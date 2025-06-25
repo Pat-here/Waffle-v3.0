@@ -1,0 +1,67 @@
+.sidebar {
+    background: #2c3e50;
+}
+
+.navbar-brand {
+    font-weight: bold;
+}
+
+.card {
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    border: none;
+    border-radius: 10px;
+}
+
+.btn {
+    border-radius: 25px;
+}
+
+.table th {
+    background-color: #f8f9fa;
+    border-top: none;
+}
+
+.badge {
+    font-size: 0.75em;
+}
+
+.text-primary { color: #007bff !important; }
+.text-success { color: #28a745 !important; }
+.text-danger { color: #dc3545 !important; }
+.text-warning { color: #ffc107 !important; }
+.text-info { color: #17a2b8 !important; }
+
+.modal-content {
+    border-radius: 15px;
+    border: none;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+.modal-header {
+    border-bottom: 1px solid #eee;
+    border-radius: 15px 15px 0 0;
+}
+
+.form-control, .form-select {
+    border-radius: 10px;
+    border: 2px solid #eee;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.btn-primary { background: linear-gradient(45deg, #007bff, #0056b3); }
+.btn-success { background: linear-gradient(45deg, #28a745, #1e7e34); }
+.btn-warning { background: linear-gradient(45deg, #ffc107, #e0a800); }
+.btn-info { background: linear-gradient(45deg, #17a2b8, #138496); }
+.btn-danger { background: linear-gradient(45deg, #dc3545, #c82333); }
+
+.display-6 { font-size: 2rem; }
+
+@media (max-width: 768px) {
+    .table-responsive {
+        font-size: 0.875rem;
+    }
+}

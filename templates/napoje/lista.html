@@ -1,0 +1,213 @@
+{% extends "base.html" %}
+
+{% block title %}Napoje - Budka Gofrowa{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3 mb-0">
+                <i class="fas fa-coffee text-info"></i> Napoje
+            </h1>
+            <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#napojModal">
+                <i class="fas fa-plus"></i> Dodaj Napój
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                {% if napoje %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Nazwa</th>
+                                    <th>Kategoria</th>
+                                    <th>Cena kupna</th>
+                                    <th>Cena sprzedaży</th>
+                                    <th>Marża</th>
+                                    <th>Status</th>
+                                    <th>Akcje</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for napoj in napoje %}
+                                <tr>
+                                    <td><strong>{{ napoj.nazwa }}</strong></td>
+                                    <td>
+                                        <span class="badge {% if napoj.kategoria == 'gorące' %}bg-danger{% elif napoj.kategoria == 'zimne' %}bg-primary{% else %}bg-secondary{% endif %}">
+                                            {{ napoj.kategoria|title }}
+                                        </span>
+                                    </td>
+                                    <td class="text-danger">{{ "%.2f"|format(napoj.cena_kupna) }} zł</td>
+                                    <td class="text-success">{{ "%.2f"|format(napoj.cena_sprzedazy) }} zł</td>
+                                    <td>
+                                        <span class="badge {% if napoj.marza > 50 %}bg-success{% elif napoj.marza > 30 %}bg-warning{% else %}bg-danger{% endif %}">
+                                            {{ "%.1f"|format(napoj.marza) }}%
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if napoj.dostepny %}
+                                            <span class="badge bg-success">Dostępny</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Niedostępny</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm btn-warning" 
+                                                onclick="edytujNapoj({{ napoj.id }}, '{{ napoj.nazwa }}', {{ napoj.cena_kupna }}, {{ napoj.cena_sprzedazy }}, '{{ napoj.kategoria }}')">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-danger" 
+                                                onclick="usunNapoj({{ napoj.id }})">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center text-muted py-5">
+                        <i class="fas fa-coffee fa-3x mb-3"></i>
+                        <h5>Brak napojów</h5>
+                        <p>Dodaj pierwszy napój, aby uzupełnić ofertę.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal dodawania/edycji napoju -->
+<div class="modal fade" id="napojModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="napojModalTitle">Dodaj Napój</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="napojForm" action="{{ url_for('dodaj_napoj') }}" method="POST">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="nazwa" class="form-label">Nazwa napoju</label>
+                        <input type="text" class="form-control" id="nazwa" name="nazwa" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="kategoria" class="form-label">Kategoria</label>
+                        <select class="form-select" id="kategoria" name="kategoria" required>
+                            <option value="">Wybierz kategorię</option>
+                            <option value="gorące">Gorące</option>
+                            <option value="zimne">Zimne</option>
+                            <option value="alkoholowe">Alkoholowe</option>
+                            <option value="bezalkoholowe">Bezalkoholowe</option>
+                        </select>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="cena_kupna" class="form-label">Cena kupna</label>
+                                <div class="input-group">
+                                    <input type="number" step="0.01" class="form-control" id="cena_kupna" name="cena_kupna" required>
+                                    <span class="input-group-text">zł</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="cena_sprzedazy" class="form-label">Cena sprzedaży</label>
+                                <div class="input-group">
+                                    <input type="number" step="0.01" class="form-control" id="cena_sprzedazy" name="cena_sprzedazy" required>
+                                    <span class="input-group-text">zł</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Anuluj</button>
+                    <button type="submit" class="btn btn-info">Zapisz</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let edytujNapojId = null;
+
+function edytujNapoj(id, nazwa, cena_kupna, cena_sprzedazy, kategoria) {
+    edytujNapojId = id;
+    document.getElementById('napojModalTitle').textContent = 'Edytuj Napój';
+    document.getElementById('napojForm').action = `/napoje/edytuj/${id}`;
+    document.getElementById('nazwa').value = nazwa;
+    document.getElementById('cena_kupna').value = cena_kupna;
+    document.getElementById('cena_sprzedazy').value = cena_sprzedazy;
+    document.getElementById('kategoria').value = kategoria;
+
+    new bootstrap.Modal(document.getElementById('napojModal')).show();
+}
+
+function usunNapoj(id) {
+    if (confirm('Czy na pewno chcesz usunąć ten napój?')) {
+        fetch(`/napoje/usun/${id}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Wystąpił błąd: ' + data.message);
+            }
+        })
+        .catch(error => {
+            alert('Wystąpił błąd: ' + error);
+        });
+    }
+}
+
+// Reset formularza po zamknięciu modala
+document.getElementById('napojModal').addEventListener('hidden.bs.modal', function () {
+    edytujNapojId = null;
+    document.getElementById('napojModalTitle').textContent = 'Dodaj Napój';
+    document.getElementById('napojForm').action = '{{ url_for("dodaj_napoj") }}';
+    document.getElementById('napojForm').reset();
+});
+
+// Obsługa formularza
+document.getElementById('napojForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const formData = new FormData(this);
+
+    fetch(this.action, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Wystąpił błąd: ' + data.message);
+        }
+    })
+    .catch(error => {
+        alert('Wystąpił błąd: ' + error);
+    });
+});
+</script>
+{% endblock %}

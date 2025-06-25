@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block title %}Zamówienia - Budka Gofrowa{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3 mb-0">
+                <i class="fas fa-shopping-cart text-info"></i> Zamówienia
+            </h1>
+            <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#zamowienieModal">
+                <i class="fas fa-plus"></i> Dodaj Zamówienie
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                {% if zamowienia %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Data</th>
+                                    <th>Dostawca</th>
+                                    <th>Status</th>
+                                    <th>Koszt</th>
+                                    <th>Uwagi</th>
+                                    <th>Akcje</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for zamowienie in zamowienia %}
+                                <tr>
+                                    <td><strong>{{ zamowienie.data_zamowienia.strftime('%d.%m.%Y') }}</strong></td>
+                                    <td>{{ zamowienie.nazwa_dostawcy }}</td>
+                                    <td>
+                                        <span class="badge {% if zamowienie.status == 'zrealizowane' %}bg-success{% elif zamowienie.status == 'w trakcie' %}bg-warning{% else %}bg-secondary{% endif %}">
+                                            {{ zamowienie.status|title }}
+                                        </span>
+                                    </td>
+                                    <td class="text-danger">{{ "%.2f"|format(zamowienie.koszt_calkowity) }} zł</td>
+                                    <td>{{ zamowienie.uwagi or '-' }}</td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm btn-warning">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-danger">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center text-muted py-5">
+                        <i class="fas fa-shopping-cart fa-3x mb-3"></i>
+                        <h5>Brak zamówień</h5>
+                        <p>Dodaj pierwsze zamówienie, aby zacząć zarządzać dostawami.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal dodawania zamówienia -->
+<div class="modal fade" id="zamowienieModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Dodaj Zamówienie</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="zamowienieForm" action="{{ url_for('dodaj_zamowienie') }}" method="POST">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="nazwa_dostawcy" class="form-label">Nazwa dostawcy</label>
+                        <input type="text" class="form-control" id="nazwa_dostawcy" name="nazwa_dostawcy" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="data_zamowienia" class="form-label">Data zamówienia</label>
+                        <input type="date" class="form-control" id="data_zamowienia" name="data_zamowienia" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="uwagi" class="form-label">Uwagi</label>
+                        <textarea class="form-control" id="uwagi" name="uwagi" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Anuluj</button>
+                    <button type="submit" class="btn btn-info">Zapisz</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Ustaw dzisiejszą datę jako domyślną
+document.getElementById('data_zamowienia').value = new Date().toISOString().split('T')[0];
+
+document.getElementById('zamowienieForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const formData = new FormData(this);
+
+    fetch(this.action, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Wystąpił błąd: ' + data.message);
+        }
+    })
+    .catch(error => {
+        alert('Wystąpił błąd: ' + error);
+    });
+});
+</script>
+{% endblock %}
