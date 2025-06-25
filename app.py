@@ -668,6 +668,144 @@ def init_db():
 
         db.session.commit()
 
+class KompozyzcjaItem(db.Model):
+    __tablename__ = 'kompozycja_items'
+    id = db.Column(db.Integer, primary_key=True)
+    kompozycja_id = db.Column(db.Integer, db.ForeignKey('kompozycja.id'), nullable=False)
+    typ_produktu = db.Column(db.String(20), nullable=False)  # 'produkt', 'dodatek', 'napoj'
+    produkt_id = db.Column(db.Integer, db.ForeignKey('produkt.id'), nullable=True)
+    dodatek_id = db.Column(db.Integer, db.ForeignKey('dodatek.id'), nullable=True)
+    napoj_id = db.Column(db.Integer, db.ForeignKey('napoj.id'), nullable=True)
+    ilosc = db.Column(db.Float, default=1.0, nullable=False)
+    
+    kompozycja = db.relationship('Kompozycja', backref='items')
+    produkt = db.relationship('Produkt', backref='w_kompozycjach')
+    dodatek = db.relationship('Dodatek', backref='w_kompozycjach')
+    napoj = db.relationship('Napoj', backref='w_kompozycjach')
+
+# Dodaj endpointy kompozycji
+@app.route('/kompozycje')
+@login_required
+def kompozycje():
+    kompozycje = Kompozycja.query.all()
+    produkty = Produkt.query.filter_by(dostepny=True).all()
+    dodatki = Dodatek.query.all()
+    napoje = Napoj.query.all()
+    return render_template('kompozycje/lista.html', 
+                         kompozycje=kompozycje, 
+                         produkty=produkty, 
+                         dodatki=dodatki, 
+                         napoje=napoje)
+
+@app.route('/kompozycje/dodaj', methods=['POST'])
+@login_required
+def dodaj_kompozycje():
+    try:
+        nazwa = request.form.get('nazwa')
+        opis = request.form.get('opis', '')
+        
+        kompozycja = Kompozycja(nazwa=nazwa, opis=opis)
+        db.session.add(kompozycja)
+        db.session.flush()
+        
+        # Dodaj składniki
+        skladniki = request.form.getlist('skladniki')
+        for skladnik_data in skladniki:
+            typ, id_produktu, ilosc = skladnik_data.split('|')
+            item = KompozyzcjaItem(
+                kompozycja_id=kompozycja.id,
+                typ_produktu=typ,
+                ilosc=float(ilosc)
+            )
+            if typ == 'produkt':
+                item.produkt_id = int(id_produktu)
+            elif typ == 'dodatek':
+                item.dodatek_id = int(id_produktu)
+            elif typ == 'napoj':
+                item.napoj_id = int(id_produktu)
+            
+            db.session.add(item)
+        
+        # Oblicz koszty
+        oblicz_koszty_kompozycji(kompozycja)
+        db.session.commit()
+        
+        return jsonify({'success': True})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)})
+
+@app.route('/kompozycje/edytuj/<int:id>', methods=['POST'])
+@login_required
+def edytuj_kompozycje(id):
+    try:
+        kompozycja = Kompozycja.query.get_or_404(id)
+        kompozycja.nazwa = request.form.get('nazwa')
+        kompozycja.opis = request.form.get('opis', '')
+        
+        # Usuń stare składniki
+        KompozyzcjaItem.query.filter_by(kompozycja_id=id).delete()
+        
+        # Dodaj nowe składniki
+        skladniki = request.form.getlist('skladniki')
+        for skladnik_data in skladniki:
+            typ, id_produktu, ilosc = skladnik_data.split('|')
+            item = KompozyzcjaItem(
+                kompozycja_id=kompozycja.id,
+                typ_produktu=typ,
+                ilosc=float(ilosc)
+            )
+            if typ == 'produkt':
+                item.produkt_id = int(id_produktu)
+            elif typ == 'dodatek':
+                item.dodatek_id = int(id_produktu)
+            elif typ == 'napoj':
+                item.napoj_id = int(id_produktu)
+            
+            db.session.add(item)
+        
+        oblicz_koszty_kompozycji(kompozycja)
+        db.session.commit()
+        
+        return jsonify({'success': True})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)})
+
+@app.route('/kompozycje/usun/<int:id>', methods=['POST'])
+@login_required
+def usun_kompozycje(id):
+    try:
+        kompozycja = Kompozycja.query.get_or_404(id)
+        KompozyzcjaItem.query.filter_by(kompozycja_id=id).delete()
+        db.session.delete(kompozycja)
+        db.session.commit()
+        return jsonify({'success': True})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)})
+
+def oblicz_koszty_kompozycji(kompozycja):
+    koszt_calkowity = 0
+    for item in kompozycja.items:
+        if item.typ_produktu == 'produkt' and item.produkt:
+            koszt_calkowity += item.produkt.koszt_wykonania * item.ilosc
+        elif item.typ_produktu == 'dodatek' and item.dodatek:
+            koszt_calkowity += item.dodatek.koszt_produkcji * item.ilosc
+        elif item.typ_produktu == 'napoj' and item.napoj:
+            koszt_calkowity += item.napoj.cena_kupna * item.ilosc
+    
+    kompozycja.koszt_wykonania = koszt_calkowity
+    if kompozycja.cena_sprzedazy and kompozycja.koszt_wykonania:
+        kompozycja.marza = ((kompozycja.cena_sprzedazy - kompozycja.koszt_wykonania) / kompozycja.cena_sprzedazy) * 100
+
+# Kalkulator marży
+@app.route('/kalkulator')
+@login_required
+def kalkulator_marzy():
+    return render_template('kalkulator/index.html')
+
+
 with app.app_context():
     init_db()
 
