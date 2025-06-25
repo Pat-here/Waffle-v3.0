@@ -1,13 +1,27 @@
 services:
   - type: web
-    name: budka-gofrowa-dashboard
-    runtime: python3
-    plan: free
+    name: waffle-shop
+    runtime: python
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn app:app
-    env:
+    startCommand: gunicorn app:app --host=0.0.0.0 --port=$PORT
+    plan: starter
+    region: oregon
+    autoDeploy: true
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: budka_gofrowa
+          property: connectionString
       - key: SECRET_KEY
         generateValue: true
-      - key: DATABASE_URL
-        value: sqlite:///budka_gofrowa.db
-    autoDeploy: false
+      - key: FLASK_APP
+        value: app.py
+
+databases:
+  - name: waffle-db
+    databaseName: waffle_production
+    user: waffle_user
+    plan: starter
+    region: oregon
