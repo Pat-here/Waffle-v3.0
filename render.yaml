@@ -16,13 +16,9 @@ services:
       - key: FLASK_ENV
         value: production
 
-      # —————————————————————————————————————
-      # Ręczne ustawienie DATABASE_URL:
-      # pełny connection string z Dashboard → Databases → Connection
-      # —————————————————————————————————————
       - key: DATABASE_URL
         value: >-
-          postgres://budka_gofrowa_user:<PASSWORD>
+          postgresql://budka_gofrowa_user:1oPLf5e5jkHfTmA6WXc0REAWim4Bt4fa
           @dpg-d1du7jur433s73fqpq90-a.oregon-internal-postgres.render.com:5432/budka_gofrowa
 
       - key: SECRET_KEY
@@ -30,3 +26,9 @@ services:
 
       - key: FLASK_APP
         value: app.py
+
+databases:
+  - name: budka_gofrowa
+    databaseName: budka_gofrowa
+    plan: starter
+    region: oregon
