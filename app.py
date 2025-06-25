@@ -762,14 +762,14 @@ class KompozyzcjaItem(db.Model):
     __tablename__ = 'kompozycja_items'
     id = db.Column(db.Integer, primary_key=True)
     kompozycja_id = db.Column(db.Integer, db.ForeignKey('kompozycja.id'), nullable=False)
-    typ_produktu = db.Column(db.String(20), nullable=False)  # 'produkt', 'dodatek', 'napoj'
-    produkt_id = db.Column(db.Integer, db.ForeignKey('produkt.id'), nullable=True)
+    typ_produktu = db.Column(db.String(20), nullable=False)  
+    produkt_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=True)  
     dodatek_id = db.Column(db.Integer, db.ForeignKey('dodatek.id'), nullable=True)
     napoj_id = db.Column(db.Integer, db.ForeignKey('napoj.id'), nullable=True)
     ilosc = db.Column(db.Float, default=1.0, nullable=False)
     
     kompozycja = db.relationship('Kompozycja', backref='items')
-    produkt = db.relationship('Produkt', backref='w_kompozycjach')
+    produkt = db.relationship('Product', backref='w_kompozycjach')  
     dodatek = db.relationship('Dodatek', backref='w_kompozycjach')
     napoj = db.relationship('Napoj', backref='w_kompozycjach')
 
