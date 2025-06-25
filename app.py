@@ -8,17 +8,19 @@ from sqlalchemy import func
 import secrets
 
 
+app = Flask(__name__)
 
-db = SQLAlchemy(app)
-# KONFIGURACJA DLA RENDER
+# ——— Konfiguracja Render (PostgreSQL) ———
 database_url = os.environ.get('DATABASE_URL')
 if database_url and database_url.startswith('postgres://'):
     database_url = database_url.replace('postgres://', 'postgresql://', 1)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = database_url 
+app.config['SQLALCHEMY_DATABASE_URI']      = database_url or 'sqlite:///waffle.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-key-change-in-production')
-app = Flask(__name__)
+app.config['SECRET_KEY']                   = os.environ.get('SECRET_KEY', 'dev-key-change-in-production')
+# ——————————————————————————————————————
+
+db = SQLAlchemy(app)
 
 # Konfiguracja Flask-Login
 login_manager = LoginManager()
