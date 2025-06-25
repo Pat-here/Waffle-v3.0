@@ -355,6 +355,96 @@ def lista_dodatkow():
     dodatki = Dodatek.query.all()
     return render_template('dodatki/lista.html', dodatki=dodatki)
 
+
+# Endpointy dla zamówień
+@app.route('/zamowienia/edytuj/<int:id>', methods=['POST'])
+@login_required
+def edytuj_zamowienie(id):
+    try:
+        zamowienie = Zamowienie.query.get_or_404(id)
+        zamowienie.dostawca = request.form.get('dostawca')
+        zamowienie.produkty = request.form.get('produkty')
+        zamowienie.koszt = float(request.form.get('koszt'))
+        zamowienie.data_zamowienia = datetime.strptime(request.form.get('data_zamowienia'), '%Y-%m-%d').date()
+        zamowienie.data_dostawy = datetime.strptime(request.form.get('data_dostawy'), '%Y-%m-%d').date() if request.form.get('data_dostawy') else None
+        zamowienie.status = request.form.get('status')
+        
+        db.session.commit()
+        return jsonify({'success': True})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)})
+
+@app.route('/zamowienia/usun/<int:id>', methods=['POST'])
+@login_required
+def usun_zamowienie(id):
+    try:
+        zamowienie = Zamowienie.query.get_or_404(id)
+        db.session.delete(zamowienie)
+        db.session.commit()
+        return jsonify({'success': True})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)})
+
+# Endpointy dla pracowników
+@app.route('/pracownicy/edytuj/<int:id>', methods=['POST'])
+@login_required
+def edytuj_pracownik(id):
+    try:
+        pracownik = Pracownik.query.get_or_404(id)
+        pracownik.imie = request.form.get('imie')
+        pracownik.nazwisko = request.form.get('nazwisko')
+        pracownik.telefon = request.form.get('telefon')
+        pracownik.stawka_godzinowa = float(request.form.get('stawka_godzinowa'))
+        pracownik.stanowisko = request.form.get('stanowisko')
+        
+        db.session.commit()
+        return jsonify({'success': True})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)})
+
+@app.route('/pracownicy/usun/<int:id>', methods=['POST'])
+@login_required
+def usun_pracownik(id):
+    try:
+        pracownik = Pracownik.query.get_or_404(id)
+        db.session.delete(pracownik)
+        db.session.commit()
+        return jsonify({'success': True})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)})
+
+# Endpointy dla notatek
+@app.route('/notatki/edytuj/<int:id>', methods=['POST'])
+@login_required
+def edytuj_notatka(id):
+    try:
+        notatka = Notatka.query.get_or_404(id)
+        notatka.tytul = request.form.get('tytul')
+        notatka.tresc = request.form.get('tresc')
+        notatka.priorytet = request.form.get('priorytet')
+        
+        db.session.commit()
+        return jsonify({'success': True})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)})
+
+@app.route('/notatki/usun/<int:id>', methods=['POST'])
+@login_required
+def usun_notatka(id):
+    try:
+        notatka = Notatka.query.get_or_404(id)
+        db.session.delete(notatka)
+        db.session.commit()
+        return jsonify({'success': True})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)})
+
 @app.route('/dodatki/dodaj', methods=['POST'])
 @login_required
 def dodaj_dodatek():
