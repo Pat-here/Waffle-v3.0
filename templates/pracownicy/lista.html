@@ -21,57 +21,59 @@
         <div class="card">
             <div class="card-body">
                 {% if pracownicy %}
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Imię i nazwisko</th>
-                                    <th>Stanowisko</th>
-                                    <th>Telefon</th>
-                                    <th>Email</th>
-                                    <th>Stawka/godz</th>
-                                    <th>Akcje</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for pracownik in pracownicy %}
-                                <tr>
-                                    <td><strong>{{ pracownik.imie }} {{ pracownik.nazwisko }}</strong></td>
-                                    <td>{{ pracownik.stanowisko or '-' }}</td>
-                                    <td>{{ pracownik.telefon or '-' }}</td>
-                                    <td>{{ pracownik.email or '-' }}</td>
-                                    <td>{{ "%.2f"|format(pracownik.stawka_godzinowa) }} zł</td>
-                                    <td>
-                                        <button type="button" class="btn btn-sm btn-warning">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <button type="button" class="btn btn-sm btn-danger">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Imię i nazwisko</th>
+                                <th>Stanowisko</th>
+                                <th>Telefon</th>
+                                <th>Email</th>
+                                <th>Stawka/godz</th>
+                                <th>Akcje</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for pracownik in pracownicy %}
+                            <tr>
+                                <td><strong>{{ pracownik.imie }} {{ pracownik.nazwisko }}</strong></td>
+                                <td>{{ pracownik.stanowisko or '-' }}</td>
+                                <td>{{ pracownik.telefon or '-' }}</td>
+                                <td>{{ pracownik.email or '-' }}</td>
+                                <td>{{ "%.2f"|format(pracownik.stawka_godzinowa) }} zł</td>
+                                <td>
+                                    <button type="button" class="btn btn-sm btn-warning" 
+                                            onclick="edytujPracownika({{ pracownik.id }}, '{{ pracownik.imie }}', '{{ pracownik.nazwisko }}', '{{ pracownik.stanowisko or '' }}', '{{ pracownik.telefon or '' }}', '{{ pracownik.email or '' }}', {{ pracownik.stawka_godzinowa }})">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-danger" 
+                                            onclick="usunPracownika({{ pracownik.id }})">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
                 {% else %}
-                    <div class="text-center text-muted py-5">
-                        <i class="fas fa-users fa-3x mb-3"></i>
-                        <h5>Brak pracowników</h5>
-                        <p>Dodaj pierwszego pracownika do zespołu.</p>
-                    </div>
+                <div class="text-center text-muted py-5">
+                    <i class="fas fa-users fa-3x mb-3"></i>
+                    <h5>Brak pracowników</h5>
+                    <p>Dodaj pierwszego pracownika do zespołu.</p>
+                </div>
                 {% endif %}
             </div>
         </div>
     </div>
 </div>
 
-<!-- Modal dodawania pracownika -->
+<!-- Modal dodawania/edycji pracownika -->
 <div class="modal fade" id="pracownikModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Dodaj Pracownika</h5>
+                <h5 class="modal-title" id="pracownikModalTitle">Dodaj Pracownika</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form id="pracownikForm" action="{{ url_for('dodaj_pracownika') }}" method="POST">
@@ -90,12 +92,12 @@
                             </div>
                         </div>
                     </div>
-
+                    
                     <div class="mb-3">
                         <label for="stanowisko" class="form-label">Stanowisko</label>
                         <input type="text" class="form-control" id="stanowisko" name="stanowisko">
                     </div>
-
+                    
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
@@ -110,11 +112,11 @@
                             </div>
                         </div>
                     </div>
-
+                    
                     <div class="mb-3">
                         <label for="stawka_godzinowa" class="form-label">Stawka godzinowa</label>
                         <div class="input-group">
-                            <input type="number" step="0.01" class="form-control" id="stawka_godzinowa" name="stawka_godzinowa">
+                            <input type="number" step="0.01" class="form-control" id="stawka_godzinowa" name="stawka_godzinowa" required>
                             <span class="input-group-text">zł</span>
                         </div>
                     </div>
@@ -131,13 +133,60 @@
 
 {% block scripts %}
 <script>
+let edytujPracownikaId = null;
+
+function edytujPracownika(id, imie, nazwisko, stanowisko, telefon, email, stawka_godzinowa) {
+    edytujPracownikaId = id;
+    document.getElementById('pracownikModalTitle').textContent = 'Edytuj Pracownika';
+    document.getElementById('pracownikForm').action = `/pracownicy/edytuj/${id}`;
+    document.getElementById('imie').value = imie;
+    document.getElementById('nazwisko').value = nazwisko;
+    document.getElementById('stanowisko').value = stanowisko;
+    document.getElementById('telefon').value = telefon;
+    document.getElementById('email').value = email;
+    document.getElementById('stawka_godzinowa').value = stawka_godzinowa;
+    
+    new bootstrap.Modal(document.getElementById('pracownikModal')).show();
+}
+
+function usunPracownika(id) {
+    if (confirm('Czy na pewno chcesz usunąć tego pracownika?')) {
+        fetch(`/pracownicy/usun/${id}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Wystąpił błąd: ' + data.message);
+            }
+        })
+        .catch(error => {
+            alert('Wystąpił błąd: ' + error);
+        });
+    }
+}
+
+// Reset formularza po zamknięciu modala
+document.getElementById('pracownikModal').addEventListener('hidden.bs.modal', function () {
+    edytujPracownikaId = null;
+    document.getElementById('pracownikModalTitle').textContent = 'Dodaj Pracownika';
+    document.getElementById('pracownikForm').action = '{{ url_for("dodaj_pracownika") }}';
+    document.getElementById('pracownikForm').reset();
+});
+
+// Obsługa formularza
 document.getElementById('pracownikForm').addEventListener('submit', function(e) {
     e.preventDefault();
 
     const formData = new FormData(this);
 
     fetch(this.action, {
-        method: 'POST',
+        method: 'POST',  
         body: formData
     })
     .then(response => response.json())
