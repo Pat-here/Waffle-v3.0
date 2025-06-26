@@ -96,7 +96,9 @@ class Kompozycja(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nazwa = db.Column(db.String(100), nullable=False)
     opis = db.Column(db.Text)
-    cena_sprzedazy = db.Column(db.Float, nullable=False)
+    cena_sprzedazy = db.Column(db.Float, nullable=True)  # Dodano pole
+    koszt_wykonania = db.Column(db.Float, nullable=True)  # Dodano pole
+    marza = db.Column(db.Float, nullable=True)  # Dodano pole
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     skladniki = db.relationship('KomponujacaKompoycja', backref='kompozycja', lazy=True, cascade='all, delete-orphan')
@@ -173,10 +175,12 @@ class RaportDzienny(db.Model):
 
 class Zamowienie(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    nazwa_dostawcy = db.Column(db.String(200), nullable=False)
+    dostawca = db.Column(db.String(200), nullable=False)  # Dodano pole
+    produkty = db.Column(db.Text, nullable=False)  # Dodano pole  
+    koszt = db.Column(db.Float, nullable=False)  # Dodano pole
     data_zamowienia = db.Column(db.Date, nullable=False)
-    status = db.Column(db.String(50), default='oczekujące')
-    koszt_calkowity = db.Column(db.Float, default=0.0)
+    data_dostawy = db.Column(db.Date, nullable=True)  # Dodano pole
+    status = db.Column(db.String(50), default='oczekujace')
     uwagi = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
@@ -565,11 +569,24 @@ def usun_napoj(id):
 # KOMPOZYCJE
 @app.route('/kompozycje')
 @login_required
-def lista_kompozycji():
+def kompozycje():
     kompozycje = Kompozycja.query.all()
-    produkty = Product.query.all()
+    
+    # Konwertuj produkty do słowników dla JSON
+    produkty = Product.query.filter_by(dostepny=True).all()
+    produkty_dict = [{'id': p.id, 'nazwa': p.nazwa, 'cena_sprzedazy': p.cena_sprzedazy} for p in produkty]
+    
     dodatki = Dodatek.query.all()
-    return render_template('kompozycje/lista.html', kompozycje=kompozycje, produkty=produkty, dodatki=dodatki)
+    dodatki_dict = [{'id': d.id, 'nazwa': d.nazwa, 'koszt_produkcji': d.koszt_produkcji} for d in dodatki]
+    
+    napoje = Napoj.query.all()
+    napoje_dict = [{'id': n.id, 'nazwa': n.nazwa, 'cena_sprzedazy': n.cena_sprzedazy} for n in napoje]
+    
+    return render_template('kompozycje/lista.html', 
+                         kompozycje=kompozycje, 
+                         produkty=produkty_dict,  # Zmieniono na słowniki
+                         dodatki=dodatki_dict,    # Zmieniono na słowniki
+                         napoje=napoje_dict)      # Zmieniono na słowniki
 
 # NOTATKI
 @app.route('/notatki')
