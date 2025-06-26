@@ -571,22 +571,24 @@ def usun_napoj(id):
 @login_required
 def kompozycje():
     kompozycje = Kompozycja.query.all()
-    
-    # Konwertuj produkty do słowników dla JSON
+
     produkty = Product.query.filter_by(dostepny=True).all()
     produkty_dict = [{'id': p.id, 'nazwa': p.nazwa, 'cena_sprzedazy': p.cena_sprzedazy} for p in produkty]
-    
+
     dodatki = Dodatek.query.all()
     dodatki_dict = [{'id': d.id, 'nazwa': d.nazwa, 'koszt_produkcji': d.koszt_produkcji} for d in dodatki]
-    
+
     napoje = Napoj.query.all()
     napoje_dict = [{'id': n.id, 'nazwa': n.nazwa, 'cena_sprzedazy': n.cena_sprzedazy} for n in napoje]
-    
-    return render_template('kompozycje/lista.html', 
-                         kompozycje=kompozycje, 
-                         produkty=produkty_dict,  # Zmieniono na słowniki
-                         dodatki=dodatki_dict,    # Zmieniono na słowniki
-                         napoje=napoje_dict)      # Zmieniono na słowniki
+
+    return render_template(
+        'kompozycje/lista.html',
+        kompozycje=kompozycje,
+        produkty=produkty_dict,
+        dodatki=dodatki_dict,
+        napoje=napoje_dict
+    )
+
 
 # NOTATKI
 @app.route('/notatki')
@@ -790,19 +792,6 @@ class KompozyzcjaItem(db.Model):
     dodatek = db.relationship('Dodatek', backref='w_kompozycjach')
     napoj = db.relationship('Napoj', backref='w_kompozycjach')
 
-# Dodaj endpointy kompozycji
-@app.route('/kompozycje')
-@login_required
-def kompozycje():
-    kompozycje = Kompozycja.query.all()
-    produkty = Produkt.query.filter_by(dostepny=True).all()
-    dodatki = Dodatek.query.all()
-    napoje = Napoj.query.all()
-    return render_template('kompozycje/lista.html', 
-                         kompozycje=kompozycje, 
-                         produkty=produkty, 
-                         dodatki=dodatki, 
-                         napoje=napoje)
 
 @app.route('/kompozycje/dodaj', methods=['POST'])
 @login_required
