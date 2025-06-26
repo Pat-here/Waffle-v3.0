@@ -37,9 +37,9 @@
                         <tbody>
                             {% for zamowienie in zamowienia %}
                             <tr>
-                                <td><strong>{{ zamowienie.dostawca }}</strong></td>
-                                <td>{{ zamowienie.produkty }}</td>
-                                <td class="text-danger">{{ "%.2f"|format(zamowienie.koszt) }} zł</td>
+                                <td><strong>{{ zamowienie.dostawca or zamowienie.nazwa_dostawcy }}</strong></td>
+                                <td>{{ zamowienie.produkty or zamowienie.uwagi }}</td>
+                                <td class="text-danger">{{ "%.2f"|format(zamowienie.koszt or zamowienie.koszt_calkowity or 0) }} zł</td>
                                 <td>{{ zamowienie.data_zamowienia.strftime('%d.%m.%Y') }}</td>
                                 <td>
                                     {% if zamowienie.data_dostawy %}
@@ -55,11 +55,13 @@
                                         <span class="badge bg-success">Dostarczone</span>
                                     {% elif zamowienie.status == 'anulowane' %}
                                         <span class="badge bg-danger">Anulowane</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">{{ zamowienie.status }}</span>
                                     {% endif %}
                                 </td>
                                 <td>
                                     <button type="button" class="btn btn-sm btn-warning" 
-                                            onclick="edytujZamowienie({{ zamowienie.id }}, '{{ zamowienie.dostawca }}', '{{ zamowienie.produkty }}', {{ zamowienie.koszt }}, '{{ zamowienie.data_zamowienia.strftime('%Y-%m-%d') }}', '{{ zamowienie.data_dostawy.strftime('%Y-%m-%d') if zamowienie.data_dostawy else '' }}', '{{ zamowienie.status }}')">
+                                            onclick="edytujZamowienie({{ zamowienie.id }}, '{{ zamowienie.dostawca or zamowienie.nazwa_dostawcy }}', '{{ zamowienie.produkty or zamowienie.uwagi }}', {{ zamowienie.koszt or zamowienie.koszt_calkowity or 0 }}, '{{ zamowienie.data_zamowienia.strftime('%Y-%m-%d') }}', '{{ zamowienie.data_dostawy.strftime('%Y-%m-%d') if zamowienie.data_dostawy else '' }}', '{{ zamowienie.status }}')">
                                         <i class="fas fa-edit"></i>
                                     </button>
                                     <button type="button" class="btn btn-sm btn-danger" 
