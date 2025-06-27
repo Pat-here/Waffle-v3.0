@@ -718,6 +718,24 @@ def dodaj_zamowienie():
         db.session.rollback()
         return jsonify({'success': False, 'message': str(e)})
 
+
+class KompozyzcjaItem(db.Model):
+    __tablename__ = 'kompozycja_items'
+    id = db.Column(db.Integer, primary_key=True)
+    kompozycja_id = db.Column(db.Integer, db.ForeignKey('kompozycja.id'), nullable=False)
+    typ_produktu = db.Column(db.String(20), nullable=False)  
+    produkt_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=True)  
+    dodatek_id = db.Column(db.Integer, db.ForeignKey('dodatek.id'), nullable=True)
+    napoj_id = db.Column(db.Integer, db.ForeignKey('napoj.id'), nullable=True)
+    ilosc = db.Column(db.Float, default=1.0, nullable=False)
+    
+    kompozycja = db.relationship('Kompozycja', backref='items')
+    produkt = db.relationship('Product', backref='w_kompozycjach')  
+    dodatek = db.relationship('Dodatek', backref='w_kompozycjach')
+    napoj = db.relationship('Napoj', backref='w_kompozycjach')
+
+
+
 def init_db():
     """Inicjalizacja bazy danych z domyślnymi danymi"""
     with app.app_context():
@@ -777,21 +795,6 @@ def init_db():
 
         db.session.commit()
 
-class KompozyzcjaItem(db.Model):
-    __tablename__ = 'kompozycja_items'
-    id = db.Column(db.Integer, primary_key=True)
-    kompozycja_id = db.Column(db.Integer, db.ForeignKey('kompozycja.id'), nullable=False)
-    typ_produktu = db.Column(db.String(20), nullable=False)  
-    produkt_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=True)  
-    dodatek_id = db.Column(db.Integer, db.ForeignKey('dodatek.id'), nullable=True)
-    napoj_id = db.Column(db.Integer, db.ForeignKey('napoj.id'), nullable=True)
-    ilosc = db.Column(db.Float, default=1.0, nullable=False)
-    
-    kompozycja = db.relationship('Kompozycja', backref='items')
-    produkt = db.relationship('Product', backref='w_kompozycjach')  
-    dodatek = db.relationship('Dodatek', backref='w_kompozycjach')
-    napoj = db.relationship('Napoj', backref='w_kompozycjach')
-
 
 @app.route('/kompozycje/dodaj', methods=['POST'])
 @login_required
@@ -799,20 +802,40 @@ def dodaj_kompozycje():
     try:
         nazwa = request.form.get('nazwa')
         opis = request.form.get('opis', '')
+        cena_sprzedazy = request.form.get('cena_sprzedazy')
         
-        kompozycja = Kompozycja(nazwa=nazwa, opis=opis)
+        # Konwertuj cenę sprzedaży na float jeśli jest podana
+        if cena_sprzedazy:
+            cena_sprzedazy = float(cena_sprzedazy)
+        else:
+            cena_sprzedazy = None
+        
+        kompozycja = Kompozycja(
+            nazwa=nazwa, 
+            opis=opis,
+            cena_sprzedazy=cena_sprzedazy
+        )
         db.session.add(kompozycja)
         db.session.flush()
         
         # Dodaj składniki
         skladniki = request.form.getlist('skladniki')
         for skladnik_data in skladniki:
-            typ, id_produktu, ilosc = skladnik_data.split('|')
+            if not skladnik_data.strip():  # Sprawdź czy składnik nie jest pusty
+                continue
+                
+            parts = skladnik_data.split('|')
+            if len(parts) != 3:  # Sprawdź czy format jest poprawny
+                continue
+                
+            typ, id_produktu, ilosc = parts
+            
             item = KompozyzcjaItem(
                 kompozycja_id=kompozycja.id,
                 typ_produktu=typ,
                 ilosc=float(ilosc)
             )
+            
             if typ == 'produkt':
                 item.produkt_id = int(id_produktu)
             elif typ == 'dodatek':
@@ -826,10 +849,10 @@ def dodaj_kompozycje():
         oblicz_koszty_kompozycji(kompozycja)
         db.session.commit()
         
-        return jsonify({'success': True})
+        return jsonify({'success': True, 'message': 'Kompozycja dodana pomyślnie!'})
     except Exception as e:
         db.session.rollback()
-        return jsonify({'success': False, 'message': str(e)})
+        return jsonify({'success': False, 'message': f'Błąd: {str(e)}'})
 
 @app.route('/kompozycje/edytuj/<int:id>', methods=['POST'])
 @login_required
