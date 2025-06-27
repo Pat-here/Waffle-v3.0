@@ -795,9 +795,9 @@ def import_raport_z_kasy():
                     skipped_count += 1
                     continue
                 
-                obroty = float(row.get('obroty', row.get('Obroty', row.get('REVENUE', 0)))
-                koszty = float(row.get('koszty', row.get('Koszty', row.get('COSTS', 0)))
-                liczba_klientow = int(float(row.get('klienci', row.get('Klienci', row.get('CUSTOMERS', 0))))
+                obroty = float(row.get('obroty', row.get('Obroty', row.get('REVENUE', 0))))
+                koszty = float(row.get('koszty', row.get('Koszty', row.get('COSTS', 0))))
+                liczba_klientow = int(float(row.get('klienci', row.get('Klienci', row.get('CUSTOMERS', 0)))))
                 
                 raport = RaportDzienny(
                     data=data,
