@@ -117,11 +117,6 @@ class Kompozycja(db.Model):
                     koszt += dodatek.koszt_produkcji * skladnik.ilosc
         return koszt
 
-    @property
-    def marza(self):
-        if self.cena_sprzedazy == 0:
-            return 0
-        return ((self.cena_sprzedazy - self.koszt_calkowity) / self.cena_sprzedazy) * 100
 
 class KomponujacaKompoycja(db.Model):
     id = db.Column(db.Integer, primary_key=True)
