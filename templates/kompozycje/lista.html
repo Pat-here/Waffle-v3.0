@@ -181,9 +181,9 @@
 let edytujKompozyzcjeId = null;
 let skladnikiKompozyzcji = [];
 
-const produktyData = {{ produkty|tojson|safe }};
-const dodatkiData = {{ dodatki|tojson|safe }};
-const napojeData = {{ napoje|tojson|safe }};
+const produktyData = {{ produkty|safe }};
+const dodatkiData = {{ dodatki|safe }};
+const napojeData = {{ napoje|safe }};
 
 // Zmiana typu składnika
 document.getElementById('typSkladnika').addEventListener('change', function() {
@@ -335,13 +335,14 @@ document.getElementById('kompozycjaForm').addEventListener('submit', function(e)
     .then(response => response.json())
     .then(data => {
         if (data.success) {
+            alert('Kompozycja została dodana pomyślnie!');
             location.reload();
         } else {
             alert('Wystąpił błąd: ' + data.message);
         }
     })
     .catch(error => {
-        alert('Wystąpił błąd: ' + error);
+        alert('Wystąpił błąd sieci: ' + error);
     });
 });
 </script>
