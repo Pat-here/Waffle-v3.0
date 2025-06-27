@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block title %}Kamery IP - Budka Gofrowa{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h1 class="h3">Podgląd kamer IP</h1>
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#dodajKamereModal">
+                    <i class="fas fa-plus"></i> Dodaj kamerę
+                </button>
+            </div>
+        </div>
+    </div>
+
+    {% if kamery %}
+    <div class="row">
+        {% for kamera in kamery %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">{{ kamera.nazwa }}</h6>
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#" onclick="edytujKamere({{ kamera.id }}, '{{ kamera.nazwa }}', '{{ kamera.url }}', '{{ kamera.typ }}', '{{ kamera.lokalizacja }}', '{{ kamera.uwagi }}')">Edytuj</a></li>
+                            <li><a class="dropdown-item text-danger" href="#" onclick="usunKamere({{ kamera.id }})">Usuń</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="embed-responsive embed-responsive-16by9" style="height: 200px; background: #f8f9fa;">
+                        {% if kamera.typ == 'ip' %}
+                        <iframe src="{{ kamera.url }}" class="w-100 h-100" frameborder="0"></iframe>
+                        {% else %}
+                        <div class="d-flex align-items-center justify-content-center h-100">
+                            <div class="text-center">
+                                <i class="fas fa-video fa-2x text-muted mb-2"></i>
+                                <p class="text-muted mb-0">{{ kamera.typ|upper }}</p>
+                                <small><a href="{{ kamera.url }}" target="_blank">Otwórz stream</a></small>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="card-footer">
+                        <small class="text-muted">
+                            <i class="fas fa-map-marker-alt"></i> {{ kamera.lokalizacja or 'Brak lokalizacji' }}
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-video fa-4x text-muted mb-3"></i>
+                    <h4 class="text-muted">Brak kamer</h4>
+                    <p>Dodaj kamery IP, aby monitorować budkę</p>
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#dodajKamereModal">
+                        <i class="fas fa-plus"></i> Dodaj kamerę
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Modal dodawania kamery -->
+<div class="modal fade" id="dodajKamereModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Dodaj nową kamerę</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="dodajKamereForm">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="nazwa" class="form-label">Nazwa kamery</label>
+                        <input type="text" class="form-control" id="nazwa" name="nazwa" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="url" class="form-label">URL kamery</label>
+                        <input type="url" class="form-control" id="url" name="url" required>
+                        <div class="form-text">Np. http://192.168.1.100:8080/video</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="typ" class="form-label">Typ kamery</label>
+                        <select class="form-select" id="typ" name="typ">
+                            <option value="ip">IP</option>
+                            <option value="rtsp">RTSP</option>
+                            <option value="http">HTTP Stream</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="lokalizacja" class="form-label">Lokalizacja</label>
+                        <input type="text" class="form-control" id="lokalizacja" name="lokalizacja" placeholder="Np. Strefa sprzedaży">
+                    </div>
+                    <div class="mb-3">
+                        <label for="uwagi" class="form-label">Uwagi</label>
+                        <textarea class="form-control" id="uwagi" name="uwagi" rows="2"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Anuluj</button>
+                    <button type="submit" class="btn btn-primary">Dodaj kamerę</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Dodawanie kamery
+document.getElementById('dodajKamereForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    
+    fetch('/kamery/dodaj', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Błąd: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Wystąpił błąd podczas dodawania kamery');
+    });
+});
+
+// Odświeżanie podglądu co 30 sekund
+setInterval(function() {
+    // Odśwież iframe'y
+    const iframes = document.querySelectorAll('iframe');
+    iframes.forEach(function(iframe) {
+        const src = iframe.src;
+        iframe.src = '';
+        iframe.src = src;
+    });
+}, 30000);
+</script>
+{% endblock %}
