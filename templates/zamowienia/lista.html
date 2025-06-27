@@ -1,222 +1,295 @@
 {% extends "base.html" %}
 
-{% block title %}Zamówienia - Budka Gofrowa{% endblock %}
+{% block title %}Kompozycje – Budka Gofrowa{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-12">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1 class="h3 mb-0">
-                <i class="fas fa-shopping-cart text-primary"></i> Zamówienia
-            </h1>
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#zamowienieModal">
-                <i class="fas fa-plus"></i> Dodaj Zamówienie
-            </button>
-        </div>
-    </div>
+<div class="row mb-4">
+  <div class="col-12 d-flex justify-content-between align-items-center">
+    <h1 class="h3 mb-0"><i class="fas fa-layer-group text-primary"></i> Kompozycje</h1>
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#kompozycjaModal">
+      <i class="fas fa-plus"></i> Dodaj Kompozycję
+    </button>
+  </div>
 </div>
 
 <div class="row">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-body">
-                {% if zamowienia %}
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th>Dostawca</th>
-                                <th>Produkty</th>
-                                <th>Koszt</th>
-                                <th>Data zamówienia</th>
-                                <th>Data dostawy</th>
-                                <th>Status</th>
-                                <th>Akcje</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for zamowienie in zamowienia %}
-                            <tr>
-                                <td><strong>{{ zamowienie.dostawca or zamowienie.nazwa_dostawcy }}</strong></td>
-                                <td>{{ zamowienie.produkty or zamowienie.uwagi }}</td>
-                                <td class="text-danger">{{ "%.2f"|format(zamowienie.koszt or zamowienie.koszt_calkowity or 0) }} zł</td>
-                                <td>{{ zamowienie.data_zamowienia.strftime('%d.%m.%Y') }}</td>
-                                <td>
-                                    {% if zamowienie.data_dostawy %}
-                                        {{ zamowienie.data_dostawy.strftime('%d.%m.%Y') }}
-                                    {% else %}
-                                        <span class="text-muted">Brak</span>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    {% if zamowienie.status == 'oczekujace' %}
-                                        <span class="badge bg-warning">Oczekujące</span>
-                                    {% elif zamowienie.status == 'dostarczone' %}
-                                        <span class="badge bg-success">Dostarczone</span>
-                                    {% elif zamowienie.status == 'anulowane' %}
-                                        <span class="badge bg-danger">Anulowane</span>
-                                    {% else %}
-                                        <span class="badge bg-secondary">{{ zamowienie.status }}</span>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    <button type="button" class="btn btn-sm btn-warning" 
-                                            onclick="edytujZamowienie({{ zamowienie.id }}, '{{ zamowienie.dostawca or zamowienie.nazwa_dostawcy }}', '{{ zamowienie.produkty or zamowienie.uwagi }}', {{ zamowienie.koszt or zamowienie.koszt_calkowity or 0 }}, '{{ zamowienie.data_zamowienia.strftime('%Y-%m-%d') }}', '{{ zamowienie.data_dostawy.strftime('%Y-%m-%d') if zamowienie.data_dostawy else '' }}', '{{ zamowienie.status }}')">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-danger" 
-                                            onclick="usunZamowienie({{ zamowienie.id }})">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-                {% else %}
-                <div class="text-center text-muted py-5">
-                    <i class="fas fa-shopping-cart fa-3x mb-3"></i>
-                    <h5>Brak zamówień</h5>
-                    <p>Dodaj pierwsze zamówienie, aby śledzić dostawy.</p>
-                </div>
-                {% endif %}
-            </div>
+  <div class="col-12">
+    {% if kompozycje %}
+    <div class="card">
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Nazwa</th>
+                <th>Składniki</th>
+                <th>Cena sprzedaży</th>
+                <th>Koszt wykonania</th>
+                <th>Marża</th>
+                <th class="text-end">Akcje</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for kompozycja in kompozycje %}
+              <tr>
+                <td>
+                  <strong>{{ kompozycja.nazwa }}</strong>
+                  {% if kompozycja.opis %}
+                  <br><small class="text-muted">{{ kompozycja.opis }}</small>
+                  {% endif %}
+                </td>
+                <td>
+                  <small>
+                    {% for item in kompozycja.items %}
+                    <span class="badge bg-light text-dark me-1">
+                      {% if item.typ_produktu == 'produkt' %}
+                        {{ item.produkt.nazwa }}
+                      {% elif item.typ_produktu == 'dodatek' %}
+                        {{ item.dodatek.nazwa }}
+                      {% else %}
+                        {{ item.napoj.nazwa }}
+                      {% endif %}
+                      ({{ item.ilosc }})
+                    </span>
+                    {% endfor %}
+                  </small>
+                </td>
+                <td class="text-success">
+                  {% if kompozycja.cena_sprzedazy is not none %}
+                    {{ "%.2f"|format(kompozycja.cena_sprzedazy) }} zł
+                  {% else %}
+                    <span class="text-muted">–</span>
+                  {% endif %}
+                </td>
+                <td class="text-danger">
+                  {{ "%.2f"|format(kompozycja.koszt_wykonania or 0) }} zł
+                </td>
+                <td>
+                  {% if kompozycja.marza is not none %}
+                  <span class="badge
+                    {% if kompozycja.marza >= 50 %}bg-success{% elif kompozycja.marza >= 30 %}bg-warning{% else %}bg-danger{% endif %}">
+                    {{ "%.1f"|format(kompozycja.marza) }}%
+                  </span>
+                  {% else %}
+                  <span class="text-muted">–</span>
+                  {% endif %}
+                </td>
+                <td class="text-end">
+                  <button class="btn btn-sm btn-warning me-1"
+                          onclick="edytujKompozycje({{ kompozycja.id }}, '{{ kompozycja.nazwa }}', '{{ kompozycja.opis|escape }}', {{ kompozycja.cena_sprzedazy or 0 }})">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  <button class="btn btn-sm btn-danger"
+                          onclick="usunKompozycje({{ kompozycja.id }})">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
         </div>
+      </div>
     </div>
+    {% else %}
+    <div class="text-center text-muted py-5">
+      <i class="fas fa-layer-group fa-3x mb-3"></i>
+      <h5>Brak kompozycji</h5>
+      <p>Dodaj pierwszą kompozycję, aby tworzyć zestawy produktów.</p>
+    </div>
+    {% endif %}
+  </div>
 </div>
 
-<!-- Modal dodawania/edycji zamówienia -->
-<div class="modal fade" id="zamowienieModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="zamowienieModalTitle">Dodaj Zamówienie</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+<!-- Modal: Dodaj / Edytuj Kompozycję -->
+<div class="modal fade" id="kompozycjaModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="kompozycjaModalTitle">Dodaj Kompozycję</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form id="kompozycjaForm" action="{{ url_for('dodaj_kompozycje') }}" method="POST">
+        <div class="modal-body">
+          <div class="row gy-3">
+            <div class="col-md-8">
+              <label for="nazwa" class="form-label">Nazwa kompozycji</label>
+              <input type="text" class="form-control" id="nazwa" name="nazwa" required>
             </div>
-            <form id="zamowienieForm" action="{{ url_for('dodaj_zamowienie') }}" method="POST">
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="dostawca" class="form-label">Dostawca</label>
-                        <input type="text" class="form-control" id="dostawca" name="dostawca" required>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="produkty" class="form-label">Produkty</label>
-                        <textarea class="form-control" id="produkty" name="produkty" rows="3" required></textarea>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="koszt" class="form-label">Koszt</label>
-                        <div class="input-group">
-                            <input type="number" step="0.01" class="form-control" id="koszt" name="koszt" required>
-                            <span class="input-group-text">zł</span>
-                        </div>
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="data_zamowienia" class="form-label">Data zamówienia</label>
-                                <input type="date" class="form-control" id="data_zamowienia" name="data_zamowienia" required>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="data_dostawy" class="form-label">Data dostawy</label>
-                                <input type="date" class="form-control" id="data_dostawy" name="data_dostawy">
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="status" class="form-label">Status</label>
-                        <select class="form-select" id="status" name="status" required>
-                            <option value="oczekujace">Oczekujące</option>
-                            <option value="dostarczone">Dostarczone</option>
-                            <option value="anulowane">Anulowane</option>
-                        </select>
-                    </div>
+            <div class="col-md-4">
+              <label for="cena_sprzedazy" class="form-label">Cena sprzedaży</label>
+              <div class="input-group">
+                <input type="number" step="0.01" class="form-control" id="cena_sprzedazy" name="cena_sprzedazy">
+                <span class="input-group-text">zł</span>
+              </div>
+            </div>
+            <div class="col-12">
+              <label for="opis" class="form-label">Opis (opcjonalny)</label>
+              <textarea class="form-control" id="opis" name="opis" rows="2"></textarea>
+            </div>
+
+            <hr class="my-3"/>
+
+            <div class="col-12">
+              <h6>Składniki kompozycji</h6>
+              <div class="row g-2 align-items-end">
+                <div class="col-md-4">
+                  <label for="typSkladnika" class="form-label">Typ składnika</label>
+                  <select id="typSkladnika" class="form-select">
+                    <option value="" selected>Wybierz typ</option>
+                    <option value="produkt">Produkt</option>
+                    <option value="dodatek">Dodatek</option>
+                    <option value="napoj">Napój</option>
+                  </select>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Anuluj</button>
-                    <button type="submit" class="btn btn-primary">Zapisz</button>
+                <div class="col-md-4">
+                  <label for="wybranyProdukt" class="form-label">Element</label>
+                  <select id="wybranyProdukt" class="form-select" disabled>
+                    <option value="" selected>Wybierz</option>
+                  </select>
                 </div>
-            </form>
+                <div class="col-md-2">
+                  <label for="iloscSkladnika" class="form-label">Ilość</label>
+                  <input type="number" step="0.1" min="0.1" id="iloscSkladnika" class="form-control" value="1">
+                </div>
+                <div class="col-md-2">
+                  <button type="button" class="btn btn-success w-100" onclick="dodajSkladnik()">
+                    <i class="fas fa-plus"></i> Dodaj
+                  </button>
+                </div>
+              </div>
+              <div id="listaSkladnikow" class="mt-3">
+                <div class="alert alert-info mb-0">
+                  <small>Dodaj składniki do kompozycji używając kontrolek powyżej.</small>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Anuluj</button>
+          <button type="submit" class="btn btn-primary">Zapisz</button>
+        </div>
+      </form>
     </div>
+  </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script>
-let edytujZamowienieId = null;
+  let edytujKompozycjeId = null;
+  let skladnikiKompozycji = [];
 
-function edytujZamowienie(id, dostawca, produkty, koszt, data_zamowienia, data_dostawy, status) {
-    edytujZamowienieId = id;
-    document.getElementById('zamowienieModalTitle').textContent = 'Edytuj Zamówienie';
-    document.getElementById('zamowienieForm').action = `/zamowienia/edytuj/${id}`;
-    document.getElementById('dostawca').value = dostawca;
-    document.getElementById('produkty').value = produkty;
-    document.getElementById('koszt').value = koszt;
-    document.getElementById('data_zamowienia').value = data_zamowienia;
-    document.getElementById('data_dostawy').value = data_dostawy;
-    document.getElementById('status').value = status;
-    
-    new bootstrap.Modal(document.getElementById('zamowienieModal')).show();
-}
+  const produktyData = {{ produkty|tojson|safe }};
+  const dodatkiData = {{ dodatki|tojson|safe }};
+  const napojeData = {{ napoje|tojson|safe }};
 
-function usunZamowienie(id) {
-    if (confirm('Czy na pewno chcesz usunąć to zamówienie?')) {
-        fetch(`/zamowienia/usun/${id}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                location.reload();
-            } else {
-                alert('Wystąpił błąd: ' + data.message);
-            }
-        })
-        .catch(error => {
-            alert('Wystąpił błąd: ' + error);
-        });
-    }
-}
+  document.getElementById('typSkladnika').addEventListener('change', function() {
+    const typ = this.value;
+    const select = document.getElementById('wybranyProdukt');
+    select.innerHTML = '<option value="">Wybierz</option>';
+    select.disabled = !typ;
 
-// Reset formularza po zamknięciu modala
-document.getElementById('zamowienieModal').addEventListener('hidden.bs.modal', function () {
-    edytujZamowienieId = null;
-    document.getElementById('zamowienieModalTitle').textContent = 'Dodaj Zamówienie';
-    document.getElementById('zamowienieForm').action = '{{ url_for("dodaj_zamowienie") }}';
-    document.getElementById('zamowienieForm').reset();
-});
+    let lista = [];
+    if (typ === 'produkt') lista = produktyData;
+    else if (typ === 'dodatek') lista = dodatkiData;
+    else if (typ === 'napoj')    lista = napojeData;
 
-// Obsługa formularza
-document.getElementById('zamowienieForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-
-    const formData = new FormData(this);
-
-    fetch(this.action, {
-        method: 'POST',  
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            location.reload();
-        } else {
-            alert('Wystąpił błąd: ' + data.message);
-        }
-    })
-    .catch(error => {
-        alert('Wystąpił błąd: ' + error);
+    lista.forEach(item => {
+      select.insertAdjacentHTML('beforeend',
+        `<option value="${item.id}">${item.nazwa} (${typ==='dodatek'?item.koszt_produkcji:item.cena_sprzedazy} zł)</option>`);
     });
-});
+  });
+
+  function dodajSkladnik() {
+    const typ = document.getElementById('typSkladnika').value;
+    const id  = document.getElementById('wybranyProdukt').value;
+    const ilo = parseFloat(document.getElementById('iloscSkladnika').value);
+    if (!typ || !id || !ilo) return alert('Wypełnij wszystkie pola składnika');
+
+    let nazwa = '–';
+    if (typ === 'produkt') nazwa = produktyData.find(x=>x.id==id).nazwa;
+    if (typ === 'dodatek') nazwa = dodatkiData.find(x=>x.id==id).nazwa;
+    if (typ === 'napoj')    nazwa = napojeData.find(x=>x.id==id).nazwa;
+
+    skladnikiKompozycji.push({ typ, id, nazwa, ilosc: ilo });
+    aktualizujListeSkladnikow();
+
+    // reset
+    document.getElementById('typSkladnika').value = '';
+    document.getElementById('wybranyProdukt').innerHTML = '<option value="">Wybierz</option>';
+    document.getElementById('wybranyProdukt').disabled = true;
+    document.getElementById('iloscSkladnika').value = '1';
+  }
+
+  function aktualizujListeSkladnikow() {
+    const kont = document.getElementById('listaSkladnikow');
+    if (!skladnikiKompozycji.length) {
+      kont.innerHTML = `<div class="alert alert-info mb-0">
+                         <small>Dodaj składniki do kompozycji używając kontrolek powyżej.</small>
+                       </div>`;
+      return;
+    }
+    kont.innerHTML = '';
+    skladnikiKompozycji.forEach((s, i) => {
+      kont.insertAdjacentHTML('beforeend', `
+        <div class="d-flex justify-content-between align-items-center mb-2 p-2 bg-light rounded">
+          <span><strong>${s.nazwa}</strong> (${s.typ}) – ${s.ilosc}</span>
+          <button class="btn btn-sm btn-danger" onclick="usunSkladnik(${i})">
+            <i class="fas fa-times"></i>
+          </button>
+          <input type="hidden" name="skladniki" value="${s.typ}|${s.id}|${s.ilosc}">
+        </div>`);
+    });
+  }
+
+  function usunSkladnik(idx) {
+    skladnikiKompozycji.splice(idx, 1);
+    aktualizujListeSkladnikow();
+  }
+
+  function edytujKompozycje(id, nazwa, opis, cena) {
+    edytujKompozycjeId = id;
+    document.getElementById('kompozycjaModalTitle').textContent = 'Edytuj Kompozycję';
+    document.getElementById('kompozycjaForm').action = `/kompozycje/edytuj/${id}`;
+    document.getElementById('nazwa').value = nazwa;
+    document.getElementById('opis').value = opis;
+    document.getElementById('cena_sprzedazy').value = cena;
+    skladnikiKompozycji = [];
+    aktualizujListeSkladnikow();
+    new bootstrap.Modal(document.getElementById('kompozycjaModal')).show();
+  }
+
+  function usunKompozycje(id) {
+    if (!confirm('Usunąć kompozycję?')) return;
+    fetch(`/kompozycje/usun/${id}`, { method:'POST' })
+      .then(r=>r.json()).then(d=>{
+        if (d.success) location.reload();
+        else alert('Błąd: '+d.message);
+      });
+  }
+
+  document.getElementById('kompozycjaForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    if (!skladnikiKompozycji.length) return alert('Dodaj przynajmniej jeden składnik');
+    const form = new FormData(this);
+    fetch(this.action, { method:'POST', body: form })
+      .then(r=>r.json()).then(d=>{
+        if (d.success) location.reload();
+        else alert('Błąd: '+d.message);
+      })
+      .catch(()=>alert('Błąd sieci'));
+  });
+
+  // reset po zamknięciu
+  document.getElementById('kompozycjaModal').addEventListener('hidden.bs.modal', ()=>{
+    edytujKompozycjeId = null;
+    document.getElementById('kompozycjaModalTitle').textContent = 'Dodaj Kompozycję';
+    document.getElementById('kompozycjaForm').action = '{{ url_for("dodaj_kompozycje") }}';
+    document.getElementById('kompozycjaForm').reset();
+    skladnikiKompozycji = [];
+    aktualizujListeSkladnikow();
+  });
 </script>
 {% endblock %}
