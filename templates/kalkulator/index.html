@@ -3,127 +3,144 @@
 {% block title %}Kalkulator Marży - Budka Gofrowa{% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <h1 class="h3 mb-3">Kalkulator Marży</h1>
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3 mb-0">
+                <i class="fas fa-calculator text-primary"></i> Kalkulator Marży
+            </h1>
         </div>
     </div>
+</div>
 
-    <div class="row">
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">Dane produktu</h5>
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-edit"></i> Dane produktu
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label for="nazwaProdukt" class="form-label">Nazwa produktu</label>
+                    <input type="text" class="form-control" id="nazwaProdukt" placeholder="Np. Gofr z czekoladą">
                 </div>
-                <div class="card-body">
-                    <form id="kalkulatorForm">
+                
+                <div class="row">
+                    <div class="col-md-6">
                         <div class="mb-3">
-                            <label for="nazwa" class="form-label">Nazwa produktu</label>
-                            <input type="text" class="form-control" id="nazwa" placeholder="Np. Mąka do gofrów">
-                        </div>
-                        
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="cenaOpakowania" class="form-label">Cena opakowania</label>
-                                    <div class="input-group">
-                                        <input type="number" class="form-control" id="cenaOpakowania" 
-                                               placeholder="0.00" step="0.01" min="0">
-                                        <span class="input-group-text">zł</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="rozmiarOpakowania" class="form-label">Rozmiar opakowania</label>
-                                    <div class="input-group">
-                                        <input type="number" class="form-control" id="rozmiarOpakowania" 
-                                               placeholder="0.00" step="0.01" min="0">
-                                        <span class="input-group-text">kg/l</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="porcjaNaGofra" class="form-label">Porcja na gofra</label>
-                                    <div class="input-group">
-                                        <input type="number" class="form-control" id="porcjaNaGofra" 
-                                               placeholder="0.00" step="0.001" min="0">
-                                        <span class="input-group-text">kg/l</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="cenaSprzedazy" class="form-label">Cena sprzedaży</label>
-                                    <div class="input-group">
-                                        <input type="number" class="form-control" id="cenaSprzedazy" 
-                                               placeholder="0.00" step="0.01" min="0">
-                                        <span class="input-group-text">zł</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="dodatkoweKoszty" class="form-label">Dodatkowe koszty (opcjonalne)</label>
+                            <label for="cenaOpakowania" class="form-label">Cena opakowania</label>
                             <div class="input-group">
-                                <input type="number" class="form-control" id="dodatkoweKoszty" 
-                                       placeholder="0.00" step="0.01" min="0" value="0">
+                                <input type="number" step="0.01" class="form-control" id="cenaOpakowania" placeholder="0.00">
                                 <span class="input-group-text">zł</span>
                             </div>
-                            <div class="form-text">Np. koszty energii, pracy, opakowania</div>
                         </div>
-                        
-                        <button type="button" class="btn btn-primary" onclick="obliczMarze()">
-                            <i class="fas fa-calculator"></i> Oblicz marżę
-                        </button>
-                    </form>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="rozmiarOpakowania" class="form-label">Rozmiar opakowania</label>
+                            <div class="input-group">
+                                <input type="number" step="0.01" class="form-control" id="rozmiarOpakowania" placeholder="0.00">
+                                <span class="input-group-text">kg/l</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="porcjaNaGofra" class="form-label">Porcja na gofra</label>
+                            <div class="input-group">
+                                <input type="number" step="0.001" class="form-control" id="porcjaNaGofra" placeholder="0.000">
+                                <span class="input-group-text">kg/l</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="cenaSprzedazy" class="form-label">Cena sprzedaży</label>
+                            <div class="input-group">
+                                <input type="number" step="0.01" class="form-control" id="cenaSprzedazy" placeholder="0.00">
+                                <span class="input-group-text">zł</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="dodatkoweKoszty" class="form-label">Dodatkowe koszty (opcjonalne)</label>
+                    <div class="input-group">
+                        <input type="number" step="0.01" class="form-control" id="dodatkoweKoszty" placeholder="0.00">
+                        <span class="input-group-text">zł</span>
+                    </div>
+                    <small class="form-text text-muted">Np. koszty energii, pracy, opakowania</small>
+                </div>
+                
+                <button type="button" class="btn btn-primary w-100" onclick="obliczMarze()">
+                    <i class="fas fa-calculator"></i> Oblicz marżę
+                </button>
+                
+                <button type="button" class="btn btn-outline-secondary w-100 mt-2" onclick="resetujKalkulator()">
+                    <i class="fas fa-refresh"></i> Wyczyść
+                </button>
             </div>
         </div>
-        
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">Wyniki obliczeń</h5>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-chart-line"></i> Wyniki obliczeń
+                </h5>
+            </div>
+            <div class="card-body">
+                <div id="wyniki" class="text-center text-muted py-5">
+                    <i class="fas fa-calculator fa-3x mb-3"></i>
+                    <h5>Wprowadź dane</h5>
+                    <p>Wypełnij formularz po lewej stronie, aby obliczyć marżę.</p>
                 </div>
-                <div class="card-body">
-                    <div id="wyniki" class="text-center">
-                        <div class="alert alert-info">
-                            <h5>Wprowadź dane</h5>
-                            <p class="mb-0">Wypełnij formularz po lewej stronie, aby obliczyć marżę.</p>
+                
+                <div id="wynikiwizualne" style="display: none;">
+                    <div class="row text-center mb-4">
+                        <div class="col-4">
+                            <div class="border rounded p-3">
+                                <h6 class="text-muted mb-1">Koszt porcji</h6>
+                                <h4 class="text-danger mb-0" id="kosztPorcji">0.00 zł</h4>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="border rounded p-3">
+                                <h6 class="text-muted mb-1">Zysk</h6>
+                                <h4 class="text-success mb-0" id="zysk">0.00 zł</h4>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="border rounded p-3">
+                                <h6 class="text-muted mb-1">Marża</h6>
+                                <h4 class="text-primary mb-0" id="marza">0.0%</h4>
+                            </div>
                         </div>
                     </div>
                     
-                    <div id="wynikiDetale" style="display: none;">
-                        <div class="row text-center">
-                            <div class="col-md-4">
-                                <h6>Koszt porcji</h6>
-                                <h4 id="kosztPorcji" class="text-primary">0.00 zł</h4>
+                    <div class="alert" id="alertMarzy" role="alert">
+                        <h5 id="ocenamarzytytul"></h5>
+                        <p id="ocenamarzytresc" class="mb-0"></p>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <h6>Dodatkowe kalkulacje:</h6>
+                        <div class="row">
+                            <div class="col-6">
+                                <small class="text-muted">Ilość porcji z opakowania:</small>
+                                <br><strong id="iloscPorcji">0</strong>
                             </div>
-                            <div class="col-md-4">
-                                <h6>Zysk</h6>
-                                <h4 id="zysk" class="text-success">0.00 zł</h4>
+                            <div class="col-6">
+                                <small class="text-muted">Koszt za 1 kg/l:</small>
+                                <br><strong id="kosztZaKg">0.00 zł</strong>
                             </div>
-                            <div class="col-md-4">
-                                <h6>Marża</h6>
-                                <h4 id="marza" class="text-warning">0.0%</h4>
-                            </div>
-                        </div>
-                        
-                        <div id="marginalAlert" class="mt-3"></div>
-                        
-                        <div class="mt-4">
-                            <h6>Dodatkowe kalkulacje:</h6>
-                            <ul class="list-unstyled">
-                                <li>Ilość porcji z opakowania: <strong id="iloscPorcji">0</strong></li>
-                                <li>Koszt za 1 kg/l: <strong id="kosztZaKg">0.00 zł</strong></li>
-                            </ul>
                         </div>
                     </div>
                 </div>
@@ -136,68 +153,84 @@
 {% block scripts %}
 <script>
 function obliczMarze() {
-    // Pobierz wartości z formularza
     const cenaOpakowania = parseFloat(document.getElementById('cenaOpakowania').value) || 0;
     const rozmiarOpakowania = parseFloat(document.getElementById('rozmiarOpakowania').value) || 0;
     const porcjaNaGofra = parseFloat(document.getElementById('porcjaNaGofra').value) || 0;
     const cenaSprzedazy = parseFloat(document.getElementById('cenaSprzedazy').value) || 0;
     const dodatkoweKoszty = parseFloat(document.getElementById('dodatkoweKoszty').value) || 0;
     
-    // Walidacja danych
-    if (cenaOpakowania > 0 && rozmiarOpakowania > 0 && porcjaNaGofra > 0 && cenaSprzedazy > 0) {
-        // Obliczenia
-        const kosztZaKg = cenaOpakowania / rozmiarOpakowania;
-        const kosztPorcji = (kosztZaKg * porcjaNaGofra) + dodatkoweKoszty;
-        const zysk = cenaSprzedazy - kosztPorcji;
-        const marza = (zysk / cenaSprzedazy) * 100;
-        const iloscPorcji = Math.floor(rozmiarOpakowania / porcjaNaGofra);
-        
-        // Wyświetl wyniki
-        document.getElementById('kosztPorcji').textContent = kosztPorcji.toFixed(2) + ' zł';
-        document.getElementById('zysk').textContent = zysk.toFixed(2) + ' zł';
-        document.getElementById('marza').textContent = marza.toFixed(1) + '%';
-        document.getElementById('iloscPorcji').textContent = iloscPorcji;
-        document.getElementById('kosztZaKg').textContent = kosztZaKg.toFixed(2) + ' zł';
-        
-        // Pokaż sekcję wyników
-        document.getElementById('wyniki').style.display = 'none';
-        document.getElementById('wynikiDetale').style.display = 'block';
-        
-        // Oceń marżę i pokaż alert
-        const alertDiv = document.getElementById('marginalAlert');
-        alertDiv.innerHTML = '';
-        
-        if (marza >= 50) {
-            alertDiv.innerHTML = '<div class="alert alert-success"><strong>Wysoka marża!</strong> Bardzo dobra rentowność produktu.</div>';
-        } else if (marza >= 30) {
-            alertDiv.innerHTML = '<div class="alert alert-warning"><strong>Średnia marża.</strong> Akceptowalna rentowność.</div>';
-        } else if (marza >= 10) {
-            alertDiv.innerHTML = '<div class="alert alert-danger"><strong>Niska marża!</strong> Rozważ podniesienie ceny lub obniżenie kosztów.</div>';
-        } else {
-            alertDiv.innerHTML = '<div class="alert alert-danger"><strong>Bardzo niska marża!</strong> Produkt może być nieopłacalny.</div>';
-        }
-        
-    } else {
-        alert('Proszę wypełnić wszystkie wymagane pola (cena opakowania, rozmiar, porcja, cena sprzedaży).');
+    if (cenaOpakowania === 0 || rozmiarOpakowania === 0 || porcjaNaGofra === 0 || cenaSprzedazy === 0) {
+        alert('Wypełnij wszystkie wymagane pola (cena opakowania, rozmiar, porcja, cena sprzedaży)');
+        return;
     }
+    
+    // Obliczenia
+    const kosztZaKg = cenaOpakowania / rozmiarOpakowania;
+    const kosztPorcji = (kosztZaKg * porcjaNaGofra) + dodatkoweKoszty;
+    const zysk = cenaSprzedazy - kosztPorcji;
+    const marza = (zysk / cenaSprzedazy) * 100;
+    const iloscPorcji = Math.floor(rozmiarOpakowania / porcjaNaGofra);
+    
+    // Wyświetlenie wyników
+    document.getElementById('kosztPorcji').textContent = kosztPorcji.toFixed(2) + ' zł';
+    document.getElementById('zysk').textContent = zysk.toFixed(2) + ' zł';
+    document.getElementById('marza').textContent = marza.toFixed(1) + '%';
+    document.getElementById('iloscPorcji').textContent = iloscPorcji;
+    document.getElementById('kosztZaKg').textContent = kosztZaKg.toFixed(2) + ' zł';
+    
+    // Ocena marży
+    let alertClass, tytul, tresc;
+    if (marza >= 50) {
+        alertClass = 'alert-success';
+        tytul = '✅ Doskonała marża!';
+        tresc = 'Marża powyżej 50% to świetny wynik. Produkt jest bardzo rentowny.';
+    } else if (marza >= 30) {
+        alertClass = 'alert-warning';
+        tytul = '⚠️ Średnia marża';
+        tresc = 'Marża jest w normie, ale można rozważyć optymalizację kosztów lub podwyższenie ceny.';
+    } else if (marza >= 0) {
+        alertClass = 'alert-danger';
+        tytul = '❌ Niska marża';
+        tresc = 'Marża jest bardzo niska. Rozważ zmianę dostawcy, zmniejszenie porcji lub podwyższenie ceny.';
+    } else {
+        alertClass = 'alert-danger';
+        tytul = '🚨 Strata!';
+        tresc = 'Sprzedajesz produkt ze stratą! Natychmiastowo zmień cenę lub koszty.';
+    }
+    
+    const alertElement = document.getElementById('alertMarzy');
+    alertElement.className = `alert ${alertClass}`;
+    document.getElementById('ocenamarzytytul').textContent = tytul;
+    document.getElementById('ocenamarzytresc').textContent = tresc;
+    
+    // Pokaż wyniki
+    document.getElementById('wyniki').style.display = 'none';
+    document.getElementById('wynikiwizualne').style.display = 'block';
 }
 
-// Automatyczne obliczenia przy zmianie wartości
-document.addEventListener('DOMContentLoaded', function() {
-    const inputs = ['cenaOpakowania', 'rozmiarOpakowania', 'porcjaNaGofra', 'cenaSprzedazy', 'dodatkoweKoszty'];
+function resetujKalkulator() {
+    document.getElementById('nazwaProdukt').value = '';
+    document.getElementById('cenaOpakowania').value = '';
+    document.getElementById('rozmiarOpakowania').value = '';
+    document.getElementById('porcjaNaGofra').value = '';
+    document.getElementById('cenaSprzedazy').value = '';
+    document.getElementById('dodatkoweKoszty').value = '';
     
-    inputs.forEach(function(inputId) {
-        document.getElementById(inputId).addEventListener('input', function() {
-            // Sprawdź czy wszystkie wymagane pola są wypełnione
-            const cenaOpakowania = parseFloat(document.getElementById('cenaOpakowania').value) || 0;
-            const rozmiarOpakowania = parseFloat(document.getElementById('rozmiarOpakowania').value) || 0;
-            const porcjaNaGofra = parseFloat(document.getElementById('porcjaNaGofra').value) || 0;
-            const cenaSprzedazy = parseFloat(document.getElementById('cenaSprzedazy').value) || 0;
-            
-            if (cenaOpakowania > 0 && rozmiarOpakowania > 0 && porcjaNaGofra > 0 && cenaSprzedazy > 0) {
-                obliczMarze();
-            }
-        });
+    document.getElementById('wyniki').style.display = 'block';
+    document.getElementById('wynikiwizualne').style.display = 'none';
+}
+
+// Automatyczne obliczanie przy zmianie wartości
+['cenaOpakowania', 'rozmiarOpakowania', 'porcjaNaGofra', 'cenaSprzedazy', 'dodatkoweKoszty'].forEach(id => {
+    document.getElementById(id).addEventListener('input', function() {
+        const cenaOpakowania = parseFloat(document.getElementById('cenaOpakowania').value) || 0;
+        const rozmiarOpakowania = parseFloat(document.getElementById('rozmiarOpakowania').value) || 0;
+        const porcjaNaGofra = parseFloat(document.getElementById('porcjaNaGofra').value) || 0;
+        const cenaSprzedazy = parseFloat(document.getElementById('cenaSprzedazy').value) || 0;
+        
+        if (cenaOpakowania > 0 && rozmiarOpakowania > 0 && porcjaNaGofra > 0 && cenaSprzedazy > 0) {
+            obliczMarze();
+        }
     });
 });
 </script>
